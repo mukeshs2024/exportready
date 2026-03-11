@@ -1,37 +1,28 @@
 import { useState } from "react";
-import axios from "axios";
-import ResultCard from "../components/ResultCard";
-
-const API = "http://127.0.0.1:8000";
+import API from "../services/api";
 
 function ProfitSimulator() {
-  const [form, setForm] = useState({
-    product_price: "",
-    production_cost: "",
-    shipping_cost: "",
-    duty_percentage: "",
-  });
+
+  const [productPrice, setProductPrice] = useState("");
+  const [productionCost, setProductionCost] = useState("");
+  const [shippingCost, setShippingCost] = useState("");
+  const [dutyPercentage, setDutyPercentage] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const calculateProfit = async () => {
     setError("");
     setResult(null);
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/profit-simulation`, null, {
+      const res = await API.post("/profit-simulation", null, {
         params: {
-          product_price: Number(form.product_price),
-          production_cost: Number(form.production_cost),
-          shipping_cost: Number(form.shipping_cost),
-          duty_percentage: Number(form.duty_percentage),
-        },
+          product_price: Number(productPrice),
+          production_cost: Number(productionCost),
+          shipping_cost: Number(shippingCost),
+          duty_percentage: Number(dutyPercentage)
+        }
       });
       setResult(res.data);
     } catch (err) {
@@ -42,48 +33,58 @@ function ProfitSimulator() {
   };
 
   return (
-    <div className="page">
-      <h1>Profit Simulator</h1>
-      <form className="form" onSubmit={handleSubmit}>
-        <input
-          name="product_price"
-          placeholder="Product Price ($)"
-          type="number"
-          value={form.product_price}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="production_cost"
-          placeholder="Production Cost ($)"
-          type="number"
-          value={form.production_cost}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="shipping_cost"
-          placeholder="Shipping Cost ($)"
-          type="number"
-          value={form.shipping_cost}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="duty_percentage"
-          placeholder="Duty Percentage (%)"
-          type="number"
-          value={form.duty_percentage}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? "Simulating…" : "Simulate Profit"}
-        </button>
-      </form>
+    <div>
 
-      {error && <p className="error">{error}</p>}
-      <ResultCard title="Profit Simulation Results" data={result} />
+      <h2>Profit Simulator</h2>
+
+      <input
+        placeholder="Product Price ($)"
+        type="number"
+        value={productPrice}
+        onChange={(e) => setProductPrice(e.target.value)}
+      />
+      <br/><br/>
+
+      <input
+        placeholder="Production Cost ($)"
+        type="number"
+        value={productionCost}
+        onChange={(e) => setProductionCost(e.target.value)}
+      />
+      <br/><br/>
+
+      <input
+        placeholder="Shipping Cost ($)"
+        type="number"
+        value={shippingCost}
+        onChange={(e) => setShippingCost(e.target.value)}
+      />
+      <br/><br/>
+
+      <input
+        placeholder="Duty Percentage (%)"
+        type="number"
+        value={dutyPercentage}
+        onChange={(e) => setDutyPercentage(e.target.value)}
+      />
+      <br/><br/>
+
+      <button onClick={calculateProfit} disabled={loading}>
+        {loading ? "Calculating..." : "Calculate Profit"}
+      </button>
+
+      {error && <p style={{color:"red",marginTop:"10px"}}>{error}</p>}
+
+      {result && (
+        <div style={{marginTop:"20px",background:"#f9f9f9",padding:"20px",borderRadius:"10px"}}>
+          <h3>Simulation Results</h3>
+          <p><strong>Duty Cost:</strong> ${result.duty_cost.toFixed(2)}</p>
+          <p><strong>Total Cost:</strong> ${result.total_cost.toFixed(2)}</p>
+          <p><strong>Profit:</strong> ${result.profit.toFixed(2)}</p>
+          <p><strong>Status:</strong> {result.profitability}</p>
+        </div>
+      )}
+
     </div>
   );
 }

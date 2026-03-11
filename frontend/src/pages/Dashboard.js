@@ -1,45 +1,67 @@
-import { Link } from "react-router-dom";
-
-const features = [
-  {
-    title: "Add Product",
-    desc: "Register your product for export readiness analysis.",
-    path: "/add-product",
-  },
-  {
-    title: "Market Analysis",
-    desc: "Discover the best international markets for your product.",
-    path: "/market-analysis",
-  },
-  {
-    title: "Profit Simulator",
-    desc: "Simulate export profitability with duties and shipping costs.",
-    path: "/profit-simulator",
-  },
-  {
-    title: "Export Plan",
-    desc: "Generate a step-by-step action plan for exporting.",
-    path: "/export-plan",
-  },
-];
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
-  return (
-    <div className="page">
-      <h1>Welcome to ExportReady</h1>
-      <p className="subtitle">
-        AI-powered platform to help Indian SMEs go global.
-      </p>
 
-      <div className="card-grid">
-        {features.map((f) => (
-          <Link to={f.path} key={f.path} className="feature-card">
-            <h3>{f.title}</h3>
-            <p>{f.desc}</p>
-          </Link>
-        ))}
+  const navigate = useNavigate();
+
+  return (
+
+    <div>
+
+      <h2>Welcome to ExportReady</h2>
+      <p>Analyze global markets and export profit potential.</p>
+
+      <div style={{display:"flex",gap:"20px",marginTop:"30px"}}>
+
+        <div
+          onClick={()=>navigate("/market")}
+          style={{
+            background:"#F5A623",
+            padding:"20px",
+            borderRadius:"10px",
+            width:"220px",
+            color:"white",
+            cursor:"pointer"
+          }}
+        >
+          <h3>Market Analysis</h3>
+          <p>Find top export countries</p>
+        </div>
+
+        <div
+          onClick={()=>navigate("/profit")}
+          style={{
+            background:"#0D1B4C",
+            padding:"20px",
+            borderRadius:"10px",
+            width:"220px",
+            color:"white",
+            cursor:"pointer"
+          }}
+        >
+          <h3>Profit Simulator</h3>
+          <p>Estimate export profitability</p>
+        </div>
+
+        <div
+          onClick={()=>navigate("/export-plan")}
+          style={{
+            background:"#0D1B4C",
+            padding:"20px",
+            borderRadius:"10px",
+            width:"220px",
+            color:"white",
+            cursor:"pointer"
+          }}
+        >
+          <h3>Compliance Guide</h3>
+          <p>Understand export rules</p>
+        </div>
+
       </div>
+
     </div>
+
   );
 }
 
