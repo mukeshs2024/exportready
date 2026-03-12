@@ -30,8 +30,8 @@ function MarketAnalysis() {
   };
 
   return (
-    <div style={{background: "white", padding: "2.5rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)", maxWidth: "800px", margin: "0 auto", border: "1px solid #e2e8f0"}}>
-      <h2 style={{color: "#0f1e3a", marginBottom: "2.5rem", fontSize: "1.8rem", fontWeight: "800"}}>Market Analysis</h2>
+    <div style={{background: "white", padding: "2.5rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)", border: "1px solid #e2e8f0"}}>
+      <h2 style={{color: "#0f1e3a", marginBottom: "2.5rem", fontSize: "1.8rem", fontWeight: "800"}}><span style={{marginRight: "0.75rem"}}>◌</span>Market Analysis</h2>
 
       <div style={{marginBottom: "1.5rem"}}>
         <label style={{display: "block", fontWeight: "600", color: "#1a202c", marginBottom: "0.5rem", fontSize: "0.95rem"}}>

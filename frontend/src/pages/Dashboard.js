@@ -46,7 +46,7 @@ function Dashboard() {
         border: "1px solid rgba(212, 175, 55, 0.2)"
       }}>
         <h1 style={{fontSize: "2.5rem", fontWeight: "800", marginBottom: "0.5rem", letterSpacing: "-1px"}}>
-          Welcome to ExportReady
+          <span style={{marginRight: "0.75rem"}}>⌂</span>Welcome to ExportReady
         </h1>
         <p style={{fontSize: "1.1rem", opacity: 0.95, maxWidth: "600px", lineHeight: "1.7"}}>
           Your comprehensive platform for international trade intelligence. Analyze global markets, 

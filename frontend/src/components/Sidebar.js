@@ -1,18 +1,19 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 
-function Sidebar() {
+function Sidebar({ isCollapsed, toggleSidebar }) {
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [hoveredPath, setHoveredPath] = useState(null);
 
   const navItems = [
-    { path: "/", label: "Dashboard", icon: "" },
-    { path: "/product", label: "Add Product", icon: "" },
-    { path: "/market", label: "Market Analysis", icon: "" },
-    { path: "/profit", label: "Profit Simulator", icon: "" },
-    { path: "/export-plan", label: "Export Plan", icon: "" },
-    { path: "/compliance", label: "Compliance Check", icon: "" },
-    { path: "/reports", label: "Reports", icon: "" },
+    { path: "/", label: "Dashboard", emoji: "⌂" },
+    { path: "/product", label: "Add Product", emoji: "+" },
+    { path: "/market", label: "Market Analysis", emoji: "◌" },
+    { path: "/profit", label: "Profit Simulator", emoji: "₹" },
+    { path: "/export-plan", label: "Export Plan", emoji: "⇄" },
+    { path: "/chatbot", label: "AI Advisor", emoji: "🗣️" },
+    { path: "/compliance", label: "Compliance Check", emoji: "✓" },
+    { path: "/reports", label: "Reports", emoji: "≡" },
   ];
 
   const handleLogout = () => {
@@ -82,48 +83,90 @@ function Sidebar() {
           transition: "padding 0.3s ease",
         }}
       >
-        {navItems.map((item) => (
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          const currentPageName = navItems.find(nav => nav.path === location.pathname)?.label || "ExportReady";
+          const isHovered = hoveredPath === item.path;
+          return (
+          <div key={item.path} style={{ position: "relative" }}>
+            {/* Hover Tooltip Button */}
+            {isHovered && isCollapsed && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: "100%",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  marginLeft: "0.75rem",
+                  background: "linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)",
+                  padding: "0.75rem 1.25rem",
+                  borderRadius: "8px",
+                  whiteSpace: "nowrap",
+                  fontWeight: "600",
+                  color: "#0f1e3a",
+                  fontSize: "1rem",
+                  boxShadow: "0 6px 20px rgba(15, 30, 58, 0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                  zIndex: 1001,
+                  animation: "slideIn 0.2s ease forwards",
+                }}
+              >
+                <span style={{ fontSize: "1.5rem" }}>{item.emoji}</span>
+                <span>{item.label}</span>
+              </div>
+            )}
+            <style>{`
+              @keyframes slideIn {
+                from {
+                  opacity: 0;
+                  transform: translateY(-50%) translateX(-10px);
+                }
+                to {
+                  opacity: 1;
+                  transform: translateY(-50%) translateX(0);
+                }
+              }
+            `}</style>
           <Link
             key={item.path}
             to={item.path}
-            title={item.label}
+            onClick={toggleSidebar}
+            title={isCollapsed ? (isActive ? currentPageName : item.label) : item.label}
+            onMouseEnter={() => setHoveredPath(item.path)}
+            onMouseLeave={() => setHoveredPath(null)}
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: isCollapsed ? "center" : "flex-start",
-              gap: isCollapsed ? 0 : "0.875rem",
-              padding: "0.875rem 1rem",
-              background: location.pathname === item.path
+              gap: isCollapsed ? 0 : "1.25rem",
+              padding: isCollapsed ? "0.875rem 0.625rem" : "0.875rem 1.2rem",
+              background: isActive
                 ? "linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%)"
-                : "transparent",
-              border: location.pathname === item.path
+                : isHovered && !isCollapsed ? "rgba(212, 175, 55, 0.08)" : "transparent",
+              border: isActive
                 ? "1.5px solid #d4af37"
                 : "1.5px solid transparent",
               borderRadius: "10px",
-              color: location.pathname === item.path ? "#d4af37" : "#cbd5e1",
+              color: isActive ? "#d4af37" : isHovered ? "#d4af37" : "#cbd5e1",
               fontSize: "0.95rem",
-              fontWeight: location.pathname === item.path ? "700" : "500",
+              fontWeight: isActive ? "700" : "500",
               textDecoration: "none",
               cursor: "pointer",
               transition: "all 0.2s ease",
               whiteSpace: "nowrap",
-            }}
-            onMouseEnter={(e) => {
-              if (location.pathname !== item.path) {
-                e.currentTarget.style.background = "rgba(212, 175, 55, 0.08)";
-                e.currentTarget.style.color = "#d4af37";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (location.pathname !== item.path) {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "#cbd5e1";
-              }
+              position: "relative",
             }}
           >
-            {item.label}
+            <span style={{ fontSize: "1.3rem", display: "flex", alignItems: "center" }}>
+              {item.emoji}
+            </span>
+            {!isCollapsed && <span>{item.label}</span>}
           </Link>
-        ))}
+          </div>
+          );
+        })}
       </nav>
 
       {/* Settings Section with Divider */}
@@ -261,39 +304,6 @@ function Sidebar() {
           ×
         </button>
       </div>
-
-      {/* Collapse Toggle Button */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        title={isCollapsed ? "Expand" : "Collapse"}
-        style={{
-          position: "absolute",
-          bottom: isCollapsed ? "100px" : "20px",
-          right: "-12px",
-          width: "24px",
-          height: "24px",
-          borderRadius: "50%",
-          background: "linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)",
-          border: "2px solid #0f1e3a",
-          color: "#0f1e3a",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "0.85rem",
-          fontWeight: "800",
-          transition: "all 0.2s ease",
-          boxShadow: "0 2px 8px rgba(15, 30, 58, 0.3)",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.1)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-        }}
-      >
-        {isCollapsed ? "→" : "←"}
-      </button>
     </div>
   );
 }

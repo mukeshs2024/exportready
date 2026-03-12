@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useState } from "react";
 
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
@@ -8,8 +9,15 @@ import ProductForm from "./pages/ProductForm";
 import MarketAnalysis from "./pages/MarketAnalysis";
 import ProfitSimulator from "./pages/ProfitSimulator";
 import ExportPlan from "./pages/ExportPlan";
+import ExportAdvisor from "./pages/ExportAdvisor";
 
 function App() {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
     <Router>
 
@@ -17,10 +25,10 @@ function App() {
 
       <div style={{display: "flex"}}>
 
-        <Sidebar />
+        <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
 
         <div style={{
-          marginLeft: "260px",
+          marginLeft: isCollapsed ? "90px" : "260px",
           padding: "2.5rem 2rem",
           flex: 1,
           minHeight: "calc(100vh - 75px)",
@@ -30,7 +38,7 @@ function App() {
 
           <Routes>
 
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Dashboard toggleSidebar={toggleSidebar} />} />
 
             <Route path="/product" element={<ProductForm />} />
 
@@ -39,6 +47,8 @@ function App() {
             <Route path="/profit" element={<ProfitSimulator />} />
 
             <Route path="/export-plan" element={<ExportPlan />} />
+
+            <Route path="/chatbot" element={<ExportAdvisor />} />
 
           </Routes>
 
