@@ -31,10 +31,10 @@ function MarketAnalysis() {
 
   return (
     <div style={{background: "white", padding: "2.5rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)", border: "1px solid #e2e8f0"}}>
-      <h2 style={{color: "#0f1e3a", marginBottom: "2.5rem", fontSize: "1.8rem", fontWeight: "800"}}><span style={{marginRight: "0.75rem"}}>◌</span>Market Analysis</h2>
+      <h2 style={{color: "#0f1e3a", marginBottom: "2.5rem", fontSize: "1.4rem", fontWeight: "800"}}><span style={{marginRight: "0.75rem"}}>◌</span>Market Analysis</h2>
 
       <div style={{marginBottom: "1.5rem"}}>
-        <label style={{display: "block", fontWeight: "600", color: "#1a202c", marginBottom: "0.5rem", fontSize: "0.95rem"}}>
+        <label style={{display: "block", fontWeight: "600", color: "#1a202c", marginBottom: "0.5rem", fontSize: "0.9rem"}}>
           Product Name
         </label>
         <input
@@ -47,7 +47,7 @@ function MarketAnalysis() {
             padding: "0.875rem 1rem",
             border: "1.5px solid #e2e8f0",
             borderRadius: "8px",
-            fontSize: "1rem",
+            fontSize: "0.9rem",
             fontFamily: "inherit",
             transition: "all 0.2s ease"
           }}
@@ -97,7 +97,7 @@ function MarketAnalysis() {
 
       {result && (
         <div style={{marginTop:"2.5rem",padding:"2rem",background:"#f0fdf4",borderRadius:"8px",borderLeft:"4px solid #16a34a"}}>
-          <h3 style={{color: "#0f1e3a", marginBottom: "1.5rem", fontSize: "1.3rem", fontWeight: "700"}}>
+          <h3 style={{color: "#0f1e3a", marginBottom: "1.5rem", fontSize: "1rem", fontWeight: "700"}}>
             ✓ Top Export Markets for <strong>{result.product}</strong>
           </h3>
           <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.25rem"}}>

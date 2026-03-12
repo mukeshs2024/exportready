@@ -46,10 +46,10 @@ function Dashboard() {
         boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)",
         border: "1px solid rgba(212, 175, 55, 0.2)"
       }}>
-        <h1 style={{fontSize: "2.5rem", fontWeight: "800", marginBottom: "0.5rem", letterSpacing: "-1px"}}>
+        <h1 style={{fontSize: "1.9rem", fontWeight: "800", marginBottom: "0.5rem", letterSpacing: "-1px"}}>
           <span style={{marginRight: "0.75rem"}}>⌂</span>Welcome to ExportReady
         </h1>
-        <p style={{fontSize: "1.1rem", opacity: 0.95, maxWidth: "600px", lineHeight: "1.7"}}>
+        <p style={{fontSize: "0.9rem", opacity: 0.95, maxWidth: "600px", lineHeight: "1.7"}}>
           Your comprehensive platform for international trade intelligence. Analyze global markets, 
           simulate profits, and ensure compliance with <span style={{color: "#d4af37", fontWeight: "700"}}>professional expertise</span>.
         </p>
@@ -86,10 +86,10 @@ function Dashboard() {
           >
             <div>
               <div style={{fontSize: "2rem", marginBottom: "0.5rem", display: "block"}}>{card.icon}</div>
-              <h3 style={{fontSize: "1.1rem", fontWeight: "700", color: "#0f1e3a", marginBottom: "0.5rem"}}>
+              <h3 style={{fontSize: "0.95rem", fontWeight: "700", color: "#0f1e3a", marginBottom: "0.5rem"}}>
                 {card.title}
               </h3>
-              <p style={{fontSize: "0.85rem", color: "#4a5568", lineHeight: "1.5"}}>
+              <p style={{fontSize: "0.75rem", color: "#4a5568", lineHeight: "1.5"}}>
                 {card.description}
               </p>
             </div>

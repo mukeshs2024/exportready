@@ -105,7 +105,7 @@ function AIPopup({ isOpen, onClose, onOpen }) {
           background: "linear-gradient(135deg, #0f1e3a 0%, #1a2f5a 100%)",
           border: "3px solid #d4af37",
           color: "white",
-          fontSize: "1.8rem",
+          fontSize: "1.4rem",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
@@ -172,7 +172,7 @@ function AIPopup({ isOpen, onClose, onOpen }) {
         }}
       >
         <div>
-          <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: "800" }}>
+          <h3 style={{ margin: 0, fontSize: "0.95rem", fontWeight: "800" }}>
             🤖 AI Advisor
           </h3>
           <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.75rem", opacity: 0.9 }}>
@@ -188,7 +188,7 @@ function AIPopup({ isOpen, onClose, onOpen }) {
             background: "transparent",
             border: "none",
             color: "white",
-            fontSize: "1.5rem",
+            fontSize: "1.2rem",
             cursor: "pointer",
             padding: "0",
             width: "30px",
@@ -319,6 +319,7 @@ function AIPopup({ isOpen, onClose, onOpen }) {
               color: "#1a202c",
               border: "none",
               borderRadius: "8px",
+              fontSize: "0.85rem",
               fontWeight: "600",
               cursor: "pointer",
               transition: "all 0.2s ease"

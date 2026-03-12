@@ -22,7 +22,7 @@ function Navbar() {
         <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
           <h2 style={{
             margin: 0,
-            fontSize: "1.7rem",
+            fontSize: "1.3rem",
             fontWeight: "800",
             color: "white",
             letterSpacing: "0.5px",
@@ -34,7 +34,7 @@ function Navbar() {
           </h2>
           <p style={{
             margin: "2px 0 0 0",
-            fontSize: "0.7rem",
+            fontSize: "0.6rem",
             color: "#d4af37",
             letterSpacing: "1.5px",
             textTransform: "uppercase",

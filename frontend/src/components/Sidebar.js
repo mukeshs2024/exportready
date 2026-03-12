@@ -69,7 +69,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
                   whiteSpace: "nowrap",
                   fontWeight: "700",
                   color: "#0f1e3a",
-                  fontSize: "1.35rem",
+                  fontSize: "1rem",
                   boxShadow: "0 8px 32px rgba(15, 30, 58, 0.4)",
                   display: "flex",
                   alignItems: "center",
@@ -79,7 +79,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
                   border: "2px solid rgba(15, 30, 58, 0.1)",
                 }}
               >
-                <span style={{ fontSize: "2.5rem", display: "flex", alignItems: "center" }}>{item.emoji}</span>
+                <span style={{ fontSize: "2rem", display: "flex", alignItems: "center" }}>{item.emoji}</span>
                 <span style={{ lineHeight: "1.3" }}>{item.label}</span>
               </div>
             )}
@@ -116,7 +116,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
                 : "1.5px solid transparent",
               borderRadius: "10px",
               color: isActive ? "#d4af37" : isHovered ? "#d4af37" : "#cbd5e1",
-              fontSize: "0.95rem",
+              fontSize: "0.88rem",
               fontWeight: isActive ? "700" : "500",
               textDecoration: "none",
               cursor: "pointer",
