@@ -1,0 +1,13 @@
+product_name,country,demand_score,market_size
+cotton shirts,USA,85,Large
+cotton shirts,Germany,78,Medium
+cotton shirts,UAE,72,Medium
+spices,USA,90,Large
+spices,UK,82,Medium
+spices,Canada,75,Medium
+electronics,Singapore,88,Large
+electronics,Japan,85,Large
+electronics,UAE,70,Medium
+rice,UAE,92,Large
+rice,Saudi Arabia,88,Large
+rice,Malaysia,80,Medium
