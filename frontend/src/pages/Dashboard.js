@@ -35,11 +35,12 @@ function Dashboard() {
   ];
 
   return (
-    <div>
+    <div style={{paddingLeft: "0"}}>
       <div style={{
         background: "linear-gradient(135deg, #0f1e3a 0%, #1a2f5a 100%)",
         color: "white",
-        padding: "3rem",
+        padding: "2rem 3rem",
+        paddingLeft: "0",
         borderRadius: "12px",
         marginBottom: "2.5rem",
         boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)",

@@ -3,19 +3,28 @@ import { useState } from "react";
 
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
+import AIPopup from "./components/AIPopup";
 
 import Dashboard from "./pages/Dashboard";
 import ProductForm from "./pages/ProductForm";
 import MarketAnalysis from "./pages/MarketAnalysis";
 import ProfitSimulator from "./pages/ProfitSimulator";
 import ExportPlan from "./pages/ExportPlan";
-import ExportAdvisor from "./pages/ExportAdvisor";
 
 function App() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
+  };
+
+  const openAIChat = () => {
+    setIsAIChatOpen(true);
+  };
+
+  const closeAIChat = () => {
+    setIsAIChatOpen(false);
   };
 
   return (
@@ -23,7 +32,7 @@ function App() {
 
       <Navbar />
 
-      <div style={{display: "flex"}}>
+      <div style={{display: "flex", marginTop: "75px"}}>
 
         <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
 
@@ -48,13 +57,13 @@ function App() {
 
             <Route path="/export-plan" element={<ExportPlan />} />
 
-            <Route path="/chatbot" element={<ExportAdvisor />} />
-
           </Routes>
 
         </div>
 
       </div>
+
+      <AIPopup isOpen={isAIChatOpen} onClose={closeAIChat} onOpen={openAIChat} />
 
     </Router>
   );

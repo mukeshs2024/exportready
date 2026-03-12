@@ -11,7 +11,6 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
     { path: "/market", label: "Market Analysis", emoji: "◌" },
     { path: "/profit", label: "Profit Simulator", emoji: "₹" },
     { path: "/export-plan", label: "Export Plan", emoji: "⇄" },
-    { path: "/chatbot", label: "AI Advisor", emoji: "🗣️" },
     { path: "/compliance", label: "Compliance Check", emoji: "✓" },
     { path: "/reports", label: "Reports", emoji: "≡" },
   ];
@@ -24,54 +23,20 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
     <div
       style={{
         width: isCollapsed ? "90px" : "260px",
-        height: "100vh",
+        height: "calc(100vh - 75px)",
         background: "linear-gradient(135deg, #0f1e3a 0%, #1a2f5a 100%)",
         position: "fixed",
         left: 0,
-        top: 0,
+        top: "75px",
         display: "flex",
         flexDirection: "column",
         borderRight: "1px solid rgba(212, 175, 55, 0.1)",
         boxShadow: "4px 0 16px rgba(15, 30, 58, 0.3)",
         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        zIndex: 1000,
+        zIndex: 100,
         overflowY: "auto",
       }}
     >
-      {/* Logo Section */}
-      <div
-        style={{
-          padding: "1.75rem",
-          borderBottom: "1px solid rgba(212, 175, 55, 0.15)",
-          transition: "all 0.3s ease",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: isCollapsed ? "center" : "flex-start",
-            gap: "0.75rem",
-          }}
-        >
-          {!isCollapsed && (
-            <div>
-              <div
-                style={{
-                  fontSize: "1.1rem",
-                  fontWeight: "800",
-                  color: "white",
-                  letterSpacing: "0.5px",
-                  transition: "font-size 0.3s ease",
-                }}
-              >
-                ExportReady
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Navigation Menu */}
       <nav
         style={{
@@ -97,24 +62,25 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
                   left: "100%",
                   top: "50%",
                   transform: "translateY(-50%)",
-                  marginLeft: "0.75rem",
+                  marginLeft: "1rem",
                   background: "linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)",
-                  padding: "0.75rem 1.25rem",
-                  borderRadius: "8px",
+                  padding: "1.75rem 2.25rem",
+                  borderRadius: "12px",
                   whiteSpace: "nowrap",
-                  fontWeight: "600",
+                  fontWeight: "700",
                   color: "#0f1e3a",
-                  fontSize: "1rem",
-                  boxShadow: "0 6px 20px rgba(15, 30, 58, 0.3)",
+                  fontSize: "1.35rem",
+                  boxShadow: "0 8px 32px rgba(15, 30, 58, 0.4)",
                   display: "flex",
                   alignItems: "center",
-                  gap: "0.75rem",
+                  gap: "1rem",
                   zIndex: 1001,
                   animation: "slideIn 0.2s ease forwards",
+                  border: "2px solid rgba(15, 30, 58, 0.1)",
                 }}
               >
-                <span style={{ fontSize: "1.5rem" }}>{item.emoji}</span>
-                <span>{item.label}</span>
+                <span style={{ fontSize: "2.5rem", display: "flex", alignItems: "center" }}>{item.emoji}</span>
+                <span style={{ lineHeight: "1.3" }}>{item.label}</span>
               </div>
             )}
             <style>{`
@@ -144,7 +110,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
               padding: isCollapsed ? "0.875rem 0.625rem" : "0.875rem 1.2rem",
               background: isActive
                 ? "linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%)"
-                : isHovered && !isCollapsed ? "rgba(212, 175, 55, 0.08)" : "transparent",
+                : isHovered ? "rgba(212, 175, 55, 0.08)" : "transparent",
               border: isActive
                 ? "1.5px solid #d4af37"
                 : "1.5px solid transparent",
