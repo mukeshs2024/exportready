@@ -9,6 +9,11 @@ function MarketAnalysis() {
   const [error, setError] = useState("");
 
   const analyze = async () => {
+    if (!productName.trim()) {
+      alert("Please enter a product name");
+      return;
+    }
+
     setError("");
     setResult(null);
     setLoading(true);
@@ -24,66 +29,86 @@ function MarketAnalysis() {
     }
   };
 
-  const containerStyle = {
-    maxWidth: "800px",
-    margin: "0 auto",
-    padding: "30px",
-    background: "white",
-    borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-  };
-
-  const inputStyle = {
-    width: "100%",
-    padding: "12px",
-    marginBottom: "15px",
-    border: "2px solid #ddd",
-    borderRadius: "8px",
-    fontSize: "1rem",
-    fontFamily: "inherit"
-  };
-
-  const buttonStyle = {
-    width: "100%",
-    padding: "12px",
-    background: loading ? "#9ca3af" : "#F5A623",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "1rem",
-    fontWeight: "600",
-    cursor: loading ? "not-allowed" : "pointer",
-    transition: "background 0.2s"
-  };
-
   return (
-    <div style={containerStyle}>
-      <h2 style={{color: "#0D1B4C", marginBottom: "25px"}}>🌍 Market Analysis</h2>
+    <div style={{background: "white", padding: "2.5rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)", maxWidth: "800px", margin: "0 auto", border: "1px solid #e2e8f0"}}>
+      <h2 style={{color: "#0f1e3a", marginBottom: "2.5rem", fontSize: "1.8rem", fontWeight: "800"}}>Market Analysis</h2>
 
-      <input
-        placeholder="Enter product name (e.g., Cotton Shirts)"
-        value={productName}
-        onChange={(e) => setProductName(e.target.value)}
-        style={inputStyle}
-      />
+      <div style={{marginBottom: "1.5rem"}}>
+        <label style={{display: "block", fontWeight: "600", color: "#1a202c", marginBottom: "0.5rem", fontSize: "0.95rem"}}>
+          Product Name
+        </label>
+        <input
+          placeholder="e.g., Cotton Shirts, Electronics Components"
+          value={productName}
+          onChange={(e) => setProductName(e.target.value)}
+          onKeyPress={(e) => e.key === "Enter" && analyze()}
+          style={{
+            width: "100%",
+            padding: "0.875rem 1rem",
+            border: "1.5px solid #e2e8f0",
+            borderRadius: "8px",
+            fontSize: "1rem",
+            fontFamily: "inherit",
+            transition: "all 0.2s ease"
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = "#0f1e3a";
+            e.target.style.boxShadow = "0 0 0 3px rgba(15, 30, 58, 0.1)";
+          }}
+          onBlur={(e) => {
+            e.target.style.boxShadow = "none";
+          }}
+        />
+      </div>
 
-      <button onClick={analyze} disabled={loading} style={buttonStyle}>
-        {loading ? "Analyzing..." : "Analyze Export Markets"}
+      <button 
+        onClick={analyze} 
+        disabled={loading} 
+        style={{
+          width: "100%",
+          padding: "0.875rem 1.5rem",
+          background: loading ? "#e2e8f0" : "linear-gradient(135deg, #ca8a04 0%, #a16207 100%)",
+          color: loading ? "#4a5568" : "white",
+          border: "none",
+          borderRadius: "8px",
+          fontSize: "1rem",
+          fontWeight: "600",
+          cursor: loading ? "not-allowed" : "pointer",
+          transition: "all 0.2s ease",
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+          boxShadow: "0 1px 3px rgba(15, 30, 58, 0.1)"
+        }}
+        onMouseEnter={(e) => {
+          if (!loading) {
+            e.currentTarget.style.transform = "translateY(-2px)";
+            e.currentTarget.style.boxShadow = "0 4px 12px rgba(15, 30, 58, 0.12)";
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "0 1px 3px rgba(15, 30, 58, 0.1)";
+        }}
+      >
+        {loading ? "Analyzing Markets..." : "Analyze Export Markets"}
       </button>
 
-      {error && <p style={{color:"#ef4444",marginTop:"15px",padding:"12px",background:"#fee2e2",borderRadius:"6px"}}>{error}</p>}
+      {error && <p style={{color:"#dc2626",marginTop:"1.5rem",padding:"1rem",background:"#fee2e2",borderRadius:"6px",borderLeft:"3px solid #dc2626"}}>{error}</p>}
 
       {result && (
-        <div style={{marginTop:"25px",padding:"20px",background:"#f0fdf4",borderRadius:"8px",borderLeft:"4px solid #10b981"}}>
-          <h3 style={{color: "#0D1B4C", marginBottom: "15px"}}>✓ Top Export Markets for: <strong>{result.product}</strong></h3>
-          <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px"}}>
+        <div style={{marginTop:"2.5rem",padding:"2rem",background:"#f0fdf4",borderRadius:"8px",borderLeft:"4px solid #16a34a"}}>
+          <h3 style={{color: "#0f1e3a", marginBottom: "1.5rem", fontSize: "1.3rem", fontWeight: "700"}}>
+            ✓ Top Export Markets for <strong>{result.product}</strong>
+          </h3>
+          <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.25rem"}}>
             {result.recommended_markets.map((country, i) => (
-              <div key={i} style={{padding:"12px",background:"white",borderRadius:"6px",border:"1px solid #d1fae5",fontWeight:"600",color:"#059669"}}>🎯 {country}</div>
+              <div key={i} style={{padding:"1.25rem",background:"white",borderRadius:"8px",border:"1px solid #d1fae5",fontWeight:"600",color:"#059669",textAlign:"center",boxShadow:"0 1px 3px rgba(15, 30, 58, 0.1)"}}>
+                {country}
+              </div>
             ))}
           </div>
         </div>
       )}
-
     </div>
   );
 }

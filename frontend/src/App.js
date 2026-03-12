@@ -20,10 +20,12 @@ function App() {
         <Sidebar />
 
         <div style={{
-          padding: "20px 30px",
-          width: "100%",
-          minHeight: "calc(100vh - 60px)",
-          background: "#f5f7fa"
+          marginLeft: "260px",
+          padding: "2.5rem 2rem",
+          flex: 1,
+          minHeight: "calc(100vh - 75px)",
+          background: "linear-gradient(135deg, #f8f9fa 0%, #f0f3f7 100%)",
+          transition: "all 0.3s ease"
         }}>
 
           <Routes>
