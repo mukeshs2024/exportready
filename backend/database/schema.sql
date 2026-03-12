@@ -28,7 +28,35 @@ CREATE TABLE products (
 );
 
 
--- 3️⃣ Export Certifications Table
+-- 3️⃣ Marketplace Products Table (Buyer-Facing Listings)
+
+CREATE TABLE products_marketplace (
+    id SERIAL PRIMARY KEY,
+    product_name TEXT NOT NULL,
+    category TEXT,
+    description TEXT,
+    price NUMERIC,
+    minimum_order_quantity INTEGER,
+    production_capacity INTEGER,
+    exporter_id INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- 4️⃣ Trade Requests Table (Buyer Requests to Exporters)
+
+CREATE TABLE trade_requests (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER REFERENCES products_marketplace(id),
+    buyer_name TEXT NOT NULL,
+    buyer_country TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    status TEXT DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- 5️⃣ Export Certifications Table
 
 CREATE TABLE export_certifications (
     id SERIAL PRIMARY KEY,

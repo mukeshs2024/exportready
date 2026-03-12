@@ -10,6 +10,10 @@ import ProductForm from "./pages/ProductForm";
 import MarketAnalysis from "./pages/MarketAnalysis";
 import ProfitSimulator from "./pages/ProfitSimulator";
 import ExportPlan from "./pages/ExportPlan";
+import ExportAdvisor from "./pages/ExportAdvisor";
+import ProductsMarketplace from "./pages/ProductsMarketplace";
+import Compliance from "./pages/Compliance";
+import Reports from "./pages/Reports";
 
 function App() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -56,6 +60,13 @@ function App() {
             <Route path="/profit" element={<ProfitSimulator />} />
 
             <Route path="/export-plan" element={<ExportPlan />} />
+
+            <Route path="/products" element={<ProductsMarketplace />} />
+
+            <Route path="/compliance" element={<Compliance />} />
+            <Route path="/reports" element={<Reports />} />
+
+            <Route path="/chatbot" element={<ExportAdvisor />} />
 
           </Routes>
 

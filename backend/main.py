@@ -7,13 +7,32 @@ from ai.chatbot import export_chatbot
 
 app = FastAPI()
 
+# Ensure CORS headers are always included, even on errors.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
+
+from fastapi.responses import JSONResponse
+
+
+@app.middleware("http")
+async def _cors_add_headers(request, call_next):
+    # FastAPI's CORS middleware can omit headers on some error paths; enforce them here.
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        # Ensure CORS headers are always present, even when an unhandled exception occurs.
+        response = JSONResponse({"detail": "Internal server error"}, status_code=500)
+
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
 
 # Include routers
 app.include_router(users_router)

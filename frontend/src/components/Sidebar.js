@@ -10,6 +10,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
     { path: "/product", label: "Add Product", emoji: "+" },
     { path: "/market", label: "Market Analysis", emoji: "◌" },
     { path: "/profit", label: "Profit Simulator", emoji: "₹" },
+    { path: "/products", label: "Products", emoji: "🛒" },
     { path: "/export-plan", label: "Export Plan", emoji: "⇄" },
     { path: "/compliance", label: "Compliance Check", emoji: "✓" },
     { path: "/reports", label: "Reports", emoji: "≡" },
