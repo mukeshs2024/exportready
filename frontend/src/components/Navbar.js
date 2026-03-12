@@ -46,6 +46,64 @@ function Navbar() {
         </div>
       </Link>
       <div style={{flexGrow: 1}}></div>
+      
+      {/* User Profile Section */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.75rem",
+        padding: "0.5rem 1rem",
+        background: "rgba(255, 255, 255, 0.08)",
+        borderRadius: "8px",
+        cursor: "pointer",
+        transition: "all 0.2s ease"
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)";
+        e.currentTarget.style.transform = "translateY(-2px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}>
+        {/* User Avatar/Icon */}
+        <div style={{
+          width: "36px",
+          height: "36px",
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #d4af37 0%, #f4d03f 100%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "1.2rem",
+          fontWeight: "700",
+          color: "#0f1e3a",
+          boxShadow: "0 2px 8px rgba(212, 175, 55, 0.3)"
+        }}>
+          👤
+        </div>
+        
+        {/* Username Text */}
+        <div style={{display: "flex", flexDirection: "column", alignItems: "flex-start"}}>
+          <p style={{
+            margin: 0,
+            fontSize: "0.85rem",
+            fontWeight: "700",
+            color: "white",
+            lineHeight: "1.2"
+          }}>
+            Exporter
+          </p>
+          <p style={{
+            margin: "2px 0 0 0",
+            fontSize: "0.65rem",
+            color: "#d4af37",
+            fontWeight: "500"
+          }}>
+            Premium Account
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
