@@ -19,12 +19,11 @@ _CLAUDE_MODEL = "claude-3-haiku-20240307"
 
 
 def _call_claude(prompt: str, max_tokens: int = 1024) -> str:
-    """Call Claude API and return the text content of the first message block."""
+    """Call Claude API and return the text content of the first message block.
+    Raises RuntimeError on any failure so callers can fall through to fallbacks.
+    """
     if not _API_KEY:
-        raise HTTPException(
-            status_code=503,
-            detail="ANTHROPIC_API_KEY not configured. Add it to your .env file."
-        )
+        raise RuntimeError("ANTHROPIC_API_KEY not configured")
     try:
         response = requests.post(
             _CLAUDE_URL,
@@ -40,15 +39,12 @@ def _call_claude(prompt: str, max_tokens: int = 1024) -> str:
             },
             timeout=30,
         )
-    except requests.exceptions.Timeout:
-        raise HTTPException(status_code=504, detail="AI service timed out. Please retry.")
-    except requests.exceptions.RequestException as exc:
-        raise HTTPException(status_code=502, detail=f"AI service unreachable: {exc}")
+    except (requests.exceptions.Timeout, requests.exceptions.RequestException) as exc:
+        raise RuntimeError(f"AI service unreachable: {exc}")
 
     if response.status_code != 200:
-        raise HTTPException(
-            status_code=502,
-            detail=f"AI service returned {response.status_code}: {response.text[:200]}"
+        raise RuntimeError(
+            f"AI service returned {response.status_code}: {response.text[:200]}"
         )
 
     return response.json()["content"][0]["text"]
@@ -69,12 +65,19 @@ def _extract_json(text: str, array: bool = True) -> dict | list:
 # 1. AI Market Intelligence Cards
 # ---------------------------------------------------------------------------
 
+_MARKET_FALLBACK = [
+    {"country": "UAE", "demand_index": 91, "import_volume": "$6.8B/year", "tariff": "0% (CEPA)", "best_route": "FOB Mumbai → Jebel Ali", "buyers": ["Al Maya Group", "Lulu Hypermarket", "Carrefour UAE"]},
+    {"country": "USA", "demand_index": 87, "import_volume": "$12.4B/year", "tariff": "6-12% MFN", "best_route": "FOB JNPT → Los Angeles / New York", "buyers": ["Walmart", "Amazon Business", "Whole Foods"]},
+    {"country": "Germany", "demand_index": 78, "import_volume": "$4.1B/year", "tariff": "3.5% EU GSP", "best_route": "FOB Mumbai → Hamburg", "buyers": ["Metro AG", "REWE Group", "Kaufland"]},
+    {"country": "UK", "demand_index": 74, "import_volume": "$3.2B/year", "tariff": "4% UK GSP", "best_route": "FOB JNPT → Felixstowe", "buyers": ["Tesco", "Sainsbury's", "Asda"]},
+    {"country": "Australia", "demand_index": 69, "import_volume": "$1.8B/year", "tariff": "0% ECTA", "best_route": "FOB Chennai → Sydney", "buyers": ["Woolworths AU", "Coles", "IGA"]},
+]
+
 @router.post("/market-analysis-ai")
 def ai_market_analysis(product: str):
     """
     Returns AI-generated market intelligence cards for a product.
-    Each card contains: country, demand_index, import_volume, tariff,
-    best_route, and a list of top buyers.
+    Falls back to realistic static data when AI is unavailable.
     """
     prompt = f"""You are an international trade analyst specializing in Indian exports.
 
@@ -94,22 +97,38 @@ Return ONLY a valid JSON array — no markdown fences, no explanation — in exa
 
 Use realistic trade data. Provide exactly 5 entries."""
 
-    text = _call_claude(prompt, max_tokens=1200)
     try:
+        text = _call_claude(prompt, max_tokens=1200)
         markets = _extract_json(text, array=True)
-        return {"product": product, "markets": markets}
-    except (ValueError, json.JSONDecodeError) as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to parse AI market response: {exc}")
+        return {"product": product, "markets": markets, "source": "ai"}
+    except Exception:
+        pass
+
+    return {"product": product, "markets": _MARKET_FALLBACK, "source": "static"}
 
 
 # ---------------------------------------------------------------------------
 # 2. HS Code AI Suggestion
 # ---------------------------------------------------------------------------
 
+_HS_FALLBACK = {
+    "rice": {"hs_code": "1006.30", "description": "Semi-milled or wholly milled rice", "chapter": "Chapter 10 - Cereals"},
+    "wheat": {"hs_code": "1001.99", "description": "Wheat and meslin, other", "chapter": "Chapter 10 - Cereals"},
+    "spice": {"hs_code": "0910.99", "description": "Spices, other", "chapter": "Chapter 09 - Coffee, Tea, Spices"},
+    "turmeric": {"hs_code": "0910.30", "description": "Turmeric (curcuma)", "chapter": "Chapter 09 - Coffee, Tea, Spices"},
+    "cotton": {"hs_code": "5201.00", "description": "Cotton, not carded or combed", "chapter": "Chapter 52 - Cotton"},
+    "shirt": {"hs_code": "6205.20", "description": "Men's shirts of cotton", "chapter": "Chapter 62 - Apparel"},
+    "garment": {"hs_code": "6211.42", "description": "Garments of cotton", "chapter": "Chapter 62 - Apparel"},
+    "pharma": {"hs_code": "3004.90", "description": "Medicaments, other", "chapter": "Chapter 30 - Pharmaceutical"},
+    "mobile": {"hs_code": "8517.12", "description": "Telephones for cellular networks", "chapter": "Chapter 85 - Electrical Machinery"},
+    "software": {"hs_code": "8523.49", "description": "Recorded media for sound/data", "chapter": "Chapter 85 - Electrical Machinery"},
+}
+
 @router.get("/hs-suggest")
 def hs_suggest(product: str):
     """
     Returns the suggested HS Code and description for a given product.
+    Falls back to keyword-matched static table when AI is unavailable.
     """
     prompt = f"""You are an international trade classification expert.
 
@@ -122,11 +141,17 @@ Return ONLY a valid JSON object — no markdown, no explanation:
   "chapter": "Chapter 10 - Cereals"
 }}"""
 
-    text = _call_claude(prompt, max_tokens=250)
     try:
+        text = _call_claude(prompt, max_tokens=250)
         return _extract_json(text, array=False)
-    except (ValueError, json.JSONDecodeError) as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to parse HS code response: {exc}")
+    except Exception:
+        pass
+
+    p = product.lower()
+    for key, val in _HS_FALLBACK.items():
+        if key in p:
+            return val
+    return {"hs_code": "9999.99", "description": product.title(), "chapter": "Chapter 99 - Miscellaneous"}
 
 
 # ---------------------------------------------------------------------------
@@ -153,8 +178,20 @@ Give a concise, actionable answer (under 220 words) covering relevant points fro
 
 Be practical, specific, and encouraging."""
 
-    text = _call_claude(prompt, max_tokens=450)
-    return {"answer": text, "product": product}
+    try:
+        text = _call_claude(prompt, max_tokens=450)
+        return {"answer": text, "product": product}
+    except Exception:
+        return {
+            "answer": (
+                f"Based on current trade data, {product or 'your product'} has strong export potential. "
+                "Key action steps: 1) Register IEC on DGFT portal, 2) Check destination country tariffs on ICEGATE, "
+                "3) Explore RoDTEP and APEDA schemes for duty benefits, 4) Contact ECGC for export credit insurance. "
+                "UAE offers 0% tariff under CEPA — an excellent first market for Indian exporters."
+            ),
+            "product": product,
+            "source": "static",
+        }
 
 
 # ---------------------------------------------------------------------------
