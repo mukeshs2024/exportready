@@ -89,8 +89,14 @@ function ExportAdvisor() {
       >
         {messages.length === 0 && (
           <div style={{ textAlign: "center", color: "#94a3b8", marginTop: "2rem" }}>
-            <p style={{ fontSize: "1.1rem", fontWeight: "500" }}>Start a conversation!</p>
-            <p style={{ fontSize: "0.9rem" }}>Ask me about export documents, processes, or market opportunities.</p>
+            <p style={{ fontSize: "1.1rem", fontWeight: "500" }}>Hello! I am the ExportReady AI Advisor.</p>
+            <p style={{ fontSize: "0.9rem", lineHeight: "1.8" }}>
+              I can help you with:<br />
+              • Export documents<br />
+              • Export process steps<br />
+              • Export markets<br />
+              • Platform features
+            </p>
           </div>
         )}
 
@@ -112,9 +118,12 @@ function ExportAdvisor() {
                 fontSize: "0.95rem",
                 lineHeight: "1.5",
                 wordWrap: "break-word",
+                whiteSpace: "pre-wrap",
               }}
             >
-              {msg.text}
+              {typeof msg.text === "string"
+                ? msg.text
+                : JSON.stringify(msg.text)}
             </div>
           </div>
         ))}
@@ -241,7 +250,7 @@ function ExportAdvisor() {
 
       {/* Helper Text */}
       <p style={{ fontSize: "0.85rem", color: "#94a3b8", textAlign: "center", margin: "0" }}>
-        💡 Try asking: "What documents do I need to export rice?" or "Which countries import electronics?"
+        💡 Try asking: "What is ExportReady?" • "What documents do I need to export rice?" • "Which countries import electronics?" • "What is the next step after IEC?"
       </p>
     </div>
   );

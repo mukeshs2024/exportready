@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from routes.users import router as users_router
 from routes.products import router as products_router
 from routes.analysis import router as analysis_router
+from ai.chatbot import export_chatbot
 
 app = FastAPI()
 
@@ -23,4 +24,10 @@ app.include_router(analysis_router)
 @app.get("/")
 def home():
     return {"message": "ExportReady API running"}
+
+
+@app.post("/chatbot")
+def chatbot(query: str):
+    response = export_chatbot(query)
+    return {"response": response}
 
