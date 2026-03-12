@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from ai.market_analysis import get_recommended_markets, calculate_profit, get_export_action_plan
+from ai.market_analysis import get_recommended_markets, calculate_profit
 
 router = APIRouter()
 
@@ -17,8 +17,3 @@ def profit_simulation(
     duty_percentage: float
 ):
     return calculate_profit(product_price, production_cost, shipping_cost, duty_percentage)
-
-
-@router.get("/export-action-plan")
-def export_action_plan(product_name: str, target_country: str):
-    return get_export_action_plan(product_name, target_country)

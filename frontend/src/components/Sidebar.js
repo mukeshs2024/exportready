@@ -13,7 +13,10 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
     { path: "/products", label: "Products", emoji: "🛒" },
     { path: "/export-plan", label: "Export Plan", emoji: "⇄" },
     { path: "/compliance", label: "Compliance Check", emoji: "✓" },
+    { path: "/readiness", label: "Readiness Score", emoji: "📊" },
     { path: "/reports", label: "Reports", emoji: "≡" },
+    { path: "/docs", label: "Documents", emoji: "📄" },
+    { path: "/chatbot", label: "AI Advisor", emoji: "💬" },
   ];
 
   const handleLogout = () => {

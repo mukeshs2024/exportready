@@ -3,6 +3,13 @@ from fastapi import FastAPI
 from routes.users import router as users_router
 from routes.products import router as products_router
 from routes.analysis import router as analysis_router
+from routes.export_analysis import router as export_router
+from routes.export_action_plan import router as action_router
+from routes.dashboard_analysis import router as dashboard_router
+from routes.system_status import router as status_router
+from routes.ai_intelligence import router as ai_router
+from routes.trade_data import router as trade_router
+from routes.compliance_check import router as compliance_router
 from ai.chatbot import export_chatbot
 
 app = FastAPI()
@@ -38,6 +45,13 @@ async def _cors_add_headers(request, call_next):
 app.include_router(users_router)
 app.include_router(products_router)
 app.include_router(analysis_router)
+app.include_router(export_router)
+app.include_router(action_router)
+app.include_router(dashboard_router)
+app.include_router(status_router)
+app.include_router(ai_router)
+app.include_router(trade_router)
+app.include_router(compliance_router)
 
 
 @app.get("/")

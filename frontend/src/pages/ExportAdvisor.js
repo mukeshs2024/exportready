@@ -4,6 +4,7 @@ import API from "../services/api";
 function ExportAdvisor() {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -30,13 +31,22 @@ function ExportAdvisor() {
     setLoading(true);
 
     try {
-      const response = await API.post("/chatbot", null, {
-        params: { query: userInput }
-      });
+      let botReply;
 
-      const botReply = response.data.response;
+      if (selectedProduct.trim()) {
+        // Context-aware AI chat when a product is specified
+        const response = await API.post("/export-chat", null, {
+          params: { question: userInput, product: selectedProduct }
+        });
+        botReply = response.data.answer;
+      } else {
+        // Fallback to rule-based chatbot when no product
+        const response = await API.post("/chatbot", null, {
+          params: { query: userInput }
+        });
+        botReply = response.data.response;
+      }
 
-      // Add bot response to chat
       setMessages([...newMessages, { sender: "bot", text: botReply }]);
     } catch (err) {
       const errorMessage = err.response?.data?.detail || "Sorry, I couldn't process your question. Please try again.";
@@ -62,14 +72,38 @@ function ExportAdvisor() {
 
   return (
     <div style={{ background: "white", padding: "2.5rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)", border: "1px solid #e2e8f0", display: "flex", flexDirection: "column", height: "calc(100vh - 200px)", maxWidth: "900px" }}>
-      {/* Header */}
       <div style={{ marginBottom: "1.5rem", paddingBottom: "1.5rem", borderBottom: "2px solid #e2e8f0" }}>
         <h2 style={{ color: "#0f1e3a", fontSize: "1.8rem", fontWeight: "800", margin: "0 0 0.5rem 0" }}>
           <span style={{ marginRight: "0.75rem" }}>💬</span>AI Export Advisor
         </h2>
-        <p style={{ color: "#64748b", fontSize: "0.95rem", margin: "0" }}>
+        <p style={{ color: "#64748b", fontSize: "0.95rem", margin: "0 0 1rem 0" }}>
           Ask me anything about export processes, documents, markets, and more!
         </p>
+
+        {/* Product context input */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: "8px", padding: "0.5rem 0.75rem" }}>
+          <span style={{ fontSize: "0.75rem", fontWeight: "700", color: "#64748b", whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            Your Product:
+          </span>
+          <input
+            type="text"
+            placeholder="e.g., Basmati Rice   (leave blank for general advice)"
+            value={selectedProduct}
+            onChange={(e) => setSelectedProduct(e.target.value)}
+            style={{
+              flex: 1, border: "none", background: "transparent", fontSize: "0.88rem",
+              fontFamily: "inherit", outline: "none", color: "#0f1e3a", fontWeight: "600",
+            }}
+          />
+          {selectedProduct.trim() && (
+            <span style={{
+              background: "#7c3aed", color: "white", borderRadius: "12px",
+              padding: "0.15rem 0.6rem", fontSize: "0.7rem", fontWeight: "700", whiteSpace: "nowrap"
+            }}>
+              AI Mode
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Chat Container */}
@@ -90,13 +124,23 @@ function ExportAdvisor() {
         {messages.length === 0 && (
           <div style={{ textAlign: "center", color: "#94a3b8", marginTop: "2rem" }}>
             <p style={{ fontSize: "1.1rem", fontWeight: "500" }}>Hello! I am the ExportReady AI Advisor.</p>
-            <p style={{ fontSize: "0.9rem", lineHeight: "1.8" }}>
-              I can help you with:<br />
-              • Export documents<br />
-              • Export process steps<br />
-              • Export markets<br />
-              • Platform features
-            </p>
+            {selectedProduct.trim() ? (
+              <p style={{ fontSize: "0.9rem", lineHeight: "1.8", color: "#7c3aed" }}>
+                🤖 AI Mode active for: <strong>{selectedProduct}</strong><br />
+                I'll give product-specific advice on markets, tariffs, timing &amp; compliance.
+              </p>
+            ) : (
+              <p style={{ fontSize: "0.9rem", lineHeight: "1.8" }}>
+                I can help you with:<br />
+                • Export documents<br />
+                • Export process steps<br />
+                • Export markets<br />
+                • Platform features<br />
+                <span style={{ color: "#7c3aed", fontWeight: "600" }}>
+                  💡 Enter your product above to unlock AI-powered advice
+                </span>
+              </p>
+            )}
           </div>
         )}
 
@@ -250,7 +294,10 @@ function ExportAdvisor() {
 
       {/* Helper Text */}
       <p style={{ fontSize: "0.85rem", color: "#94a3b8", textAlign: "center", margin: "0" }}>
-        💡 Try asking: "What is ExportReady?" • "What documents do I need to export rice?" • "Which countries import electronics?" • "What is the next step after IEC?"
+        {selectedProduct.trim()
+          ? `💡 AI Mode: Ask about markets, tariffs, timing, or compliance for "${selectedProduct}"`
+          : `💡 Try: "What documents do I need to export rice?" • "Which countries import electronics?"`
+        }
       </p>
     </div>
   );

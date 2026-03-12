@@ -478,7 +478,8 @@ body {
   }
 
   .main-content {
-    padding: 1.5rem 1rem;
+    margin-left: 240px !important;
+    padding: 1.5rem 1rem !important;
   }
 
   .card-container {
@@ -497,6 +498,37 @@ body {
   .form-container {
     padding: 1.5rem;
   }
+
+  /* Dashboard metric strip — stack 2 per row on tablet */
+  .metric-strip {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Dashboard nav grid — 2 columns on tablet */
+  .nav-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Charts — stack vertically */
+  .charts-row {
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+  }
+
+  /* Impact stats — 2 per row */
+  .impact-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Compliance rules table — allow horizontal scroll */
+  .compliance-table-wrap {
+    overflow-x: auto;
+  }
+
+  /* Export readiness checklist — full width */
+  .readiness-layout {
+    flex-direction: column !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -508,8 +540,16 @@ body {
     display: none;
   }
 
+  /* Collapse sidebar off-screen on tiny screens */
   .sidebar {
-    width: 200px;
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding: 1rem !important;
   }
 
   .page-header h1 {
@@ -518,5 +558,25 @@ body {
 
   .hero-banner h1 {
     font-size: 1.5rem;
+  }
+
+  /* Dashboard metric strip — 1 per row on phone */
+  .metric-strip {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Nav grid — 1 column on phone */
+  .nav-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Impact grid — 1 column on phone */
+  .impact-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Onboarding card — tighter padding */
+  .onboarding-card {
+    padding: 1.5rem 1rem !important;
   }
 }

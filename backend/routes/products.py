@@ -51,7 +51,13 @@ def add_marketplace_product(
         "production_capacity": production_capacity
     }
 
-    response = supabase.table("products_marketplace").insert(data).execute()
+    try:
+        response = supabase.table("products_marketplace").insert(data).execute()
+    except APIError as e:
+        msg = e.args[0] if e.args else str(e)
+        if isinstance(msg, dict):
+            msg = msg.get("message", str(msg))
+        raise HTTPException(status_code=500, detail=f"Database error: {msg}")
 
     return {
         "message": "Marketplace product added successfully",
