@@ -54,7 +54,7 @@ function ProductForm() {
   };
 
   return (
-    <div style={{background: "white", padding: "2.5rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)", border: "1px solid #e2e8f0"}}>
+    <div style={{background: "white", padding: "3rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)", border: "1px solid #e2e8f0"}}>
       <h2 style={{color: "#0f1e3a", marginBottom: "1.5rem", fontSize: "1.2rem", fontWeight: "800"}}><span style={{marginRight: "0.75rem"}}>+</span>Add New Product</h2>
 
       <div style={{marginBottom: "1.2rem"}}>

@@ -30,11 +30,11 @@ function MarketAnalysis() {
   };
 
   return (
-    <div style={{background: "white", padding: "2.5rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)", border: "1px solid #e2e8f0"}}>
+    <div style={{background: "white", padding: "3rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)", border: "1px solid #e2e8f0"}}>
       <h2 style={{color: "#0f1e3a", marginBottom: "2.5rem", fontSize: "1.4rem", fontWeight: "800"}}><span style={{marginRight: "0.75rem"}}>◌</span>Market Analysis</h2>
 
       <div style={{marginBottom: "1.5rem"}}>
-        <label style={{display: "block", fontWeight: "600", color: "#1a202c", marginBottom: "0.5rem", fontSize: "0.9rem"}}>
+        <label style={{display: "block", fontWeight: "600", color: "#1a202c", marginBottom: "0.5rem", fontSize: "0.8rem"}}>
           Product Name
         </label>
         <input
@@ -47,7 +47,7 @@ function MarketAnalysis() {
             padding: "0.875rem 1rem",
             border: "1.5px solid #e2e8f0",
             borderRadius: "8px",
-            fontSize: "0.9rem",
+            fontSize: "0.85rem",
             fontFamily: "inherit",
             transition: "all 0.2s ease"
           }}
@@ -71,7 +71,7 @@ function MarketAnalysis() {
           color: loading ? "#4a5568" : "white",
           border: "none",
           borderRadius: "8px",
-          fontSize: "1rem",
+          fontSize: "0.85rem",
           fontWeight: "600",
           cursor: loading ? "not-allowed" : "pointer",
           transition: "all 0.2s ease",

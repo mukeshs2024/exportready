@@ -55,7 +55,7 @@ function Dashboard() {
         </p>
       </div>
 
-      <div style={{display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem", margin: "2rem 0"}}>
+      <div style={{display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "2rem", margin: "2.5rem 0"}}>
         {cards.map((card) => (
           <div
             key={card.path}
@@ -64,7 +64,7 @@ function Dashboard() {
               background: "white",
               border: "1px solid #e2e8f0",
               borderRadius: "12px",
-              padding: "1.25rem",
+              padding: "1.5rem",
               cursor: "pointer",
               transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
               boxShadow: "0 1px 3px rgba(15, 30, 58, 0.1)",
@@ -89,7 +89,7 @@ function Dashboard() {
               <h3 style={{fontSize: "0.95rem", fontWeight: "700", color: "#0f1e3a", marginBottom: "0.5rem"}}>
                 {card.title}
               </h3>
-              <p style={{fontSize: "0.75rem", color: "#4a5568", lineHeight: "1.5"}}>
+              <p style={{fontSize: "0.7rem", color: "#4a5568", lineHeight: "1.5"}}>
                 {card.description}
               </p>
             </div>
@@ -97,11 +97,11 @@ function Dashboard() {
         ))}
       </div>
 
-      <div style={{background: "#f7f8fc", padding: "2rem", borderRadius: "12px", marginTop: "3rem", border: "1px solid #e2e8f0"}}>
-        <h3 style={{color: "#0f1e3a", marginBottom: "1rem", fontSize: "1.1rem", fontWeight: "700"}}>
+      <div style={{background: "#f7f8fc", padding: "2.5rem", borderRadius: "12px", marginTop: "3rem", border: "1px solid #e2e8f0"}}>
+        <h3 style={{color: "#0f1e3a", marginBottom: "1.2rem", fontSize: "1rem", fontWeight: "700"}}>
           Quick Start Guide
         </h3>
-        <ul style={{color: "#4a5568", lineHeight: "1.8", marginLeft: "1.5rem", fontSize: "0.95rem"}}>
+        <ul style={{color: "#4a5568", lineHeight: "1.9", marginLeft: "1.5rem", fontSize: "0.82rem"}}>
           <li style={{marginBottom: "0.5rem"}}><strong>Step 1:</strong> Register your export products with detailed specifications</li>
           <li style={{marginBottom: "0.5rem"}}><strong>Step 2:</strong> Analyze target markets to identify best opportunities</li>
           <li style={{marginBottom: "0.5rem"}}><strong>Step 3:</strong> Run profit simulations for different scenarios</li>
@@ -110,7 +110,7 @@ function Dashboard() {
       </div>
 
       <div style={{background: "#0f1e3a", color: "white", padding: "1.5rem", borderRadius: "8px", marginTop: "2rem", textAlign: "center"}}>
-        <p style={{fontSize: "0.9rem", opacity: 0.9}}>
+        <p style={{fontSize: "0.82rem", opacity: 0.9}}>
           Enterprise-Grade Security | Global Compliance | Real-Time Analytics
         </p>
       </div>

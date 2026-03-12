@@ -37,8 +37,8 @@ function App() {
         <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
 
         <div style={{
-          marginLeft: isCollapsed ? "90px" : "260px",
-          padding: "2.5rem 2rem",
+          marginLeft: isCollapsed ? "70px" : "220px",
+          padding: "2rem 2.5rem",
           flex: 1,
           minHeight: "calc(100vh - 75px)",
           background: "linear-gradient(135deg, #f8f9fa 0%, #f0f3f7 100%)",

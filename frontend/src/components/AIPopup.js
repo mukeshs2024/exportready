@@ -266,10 +266,10 @@ function AIPopup({ isOpen, onClose, onOpen }) {
       {/* Input Area */}
       <div style={{
         borderTop: "1px solid #cbd5e1",
-        padding: "1rem",
+        padding: "1.2rem",
         display: "flex",
         flexDirection: "column",
-        gap: "0.75rem",
+        gap: "0.6rem",
         background: "white"
       }}>
         <input
@@ -279,10 +279,10 @@ function AIPopup({ isOpen, onClose, onOpen }) {
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
           style={{
-            padding: "0.75rem",
+            padding: "0.7rem",
             border: "1px solid #cbd5e1",
             borderRadius: "8px",
-            fontSize: "0.9rem",
+            fontSize: "0.85rem",
             fontFamily: "inherit",
             outline: "none",
             transition: "border-color 0.2s ease"

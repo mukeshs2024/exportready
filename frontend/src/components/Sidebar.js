@@ -22,7 +22,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
   return (
     <div
       style={{
-        width: isCollapsed ? "90px" : "260px",
+        width: isCollapsed ? "70px" : "220px",
         height: "calc(100vh - 75px)",
         background: "linear-gradient(135deg, #0f1e3a 0%, #1a2f5a 100%)",
         position: "fixed",
@@ -41,10 +41,10 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
       <nav
         style={{
           flex: 1,
-          padding: "1.5rem 0.75rem",
+          padding: "1.2rem 0.6rem",
           display: "flex",
           flexDirection: "column",
-          gap: "0.5rem",
+          gap: "0.6rem",
           transition: "padding 0.3s ease",
         }}
       >
@@ -106,8 +106,8 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
               display: "flex",
               alignItems: "center",
               justifyContent: isCollapsed ? "center" : "flex-start",
-              gap: isCollapsed ? 0 : "1.25rem",
-              padding: isCollapsed ? "0.875rem 0.625rem" : "0.875rem 1.2rem",
+              gap: isCollapsed ? 0 : "1rem",
+              padding: isCollapsed ? "0.75rem 0.5rem" : "0.75rem 1rem",
               background: isActive
                 ? "linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%)"
                 : isHovered ? "rgba(212, 175, 55, 0.08)" : "transparent",
