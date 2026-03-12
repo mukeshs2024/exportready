@@ -15,11 +15,16 @@ function App() {
 
       <Navbar />
 
-      <div style={{display:"flex"}}>
+      <div style={{display: "flex"}}>
 
         <Sidebar />
 
-        <div style={{padding:"20px",width:"100%"}}>
+        <div style={{
+          padding: "20px 30px",
+          width: "100%",
+          minHeight: "calc(100vh - 60px)",
+          background: "#f5f7fa"
+        }}>
 
           <Routes>
 
