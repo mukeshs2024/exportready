@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 
 // ── Step SVG icons ────────────────────────────────────────────────────────
 function IcClipboard() {
@@ -31,45 +32,45 @@ function IcFileCheck() {
 const JOURNEY = [
   {
     key: "iec",
-    label: "Upload IEC Certificate",
-    why: "IEC (Import Export Code) is mandatory to legally export products from India. Issued by DGFT.",
-    action: "Upload Certificate",
+    labelKey: "readiness.journey.iec.label",
+    whyKey: "readiness.journey.iec.why",
+    actionKey: "readiness.journey.iec.action",
     icon: <IcClipboard />,
     color: "#2563eb",
     link: null,
   },
   {
     key: "product",
-    label: "Add Product Details",
-    why: "List your product with HS code, specifications, and pricing to begin the export process.",
-    action: "Add Product",
+    labelKey: "readiness.journey.product.label",
+    whyKey: "readiness.journey.product.why",
+    actionKey: "readiness.journey.product.action",
     icon: <IcPackage />,
     color: "#16a34a",
     link: "/product",
   },
   {
     key: "compliance",
-    label: "Run Compliance Check",
-    why: "Verify regulatory requirements, certifications, and labeling rules for your target market.",
-    action: "Check Compliance",
+    labelKey: "readiness.journey.compliance.label",
+    whyKey: "readiness.journey.compliance.why",
+    actionKey: "readiness.journey.compliance.action",
     icon: <IcShield />,
     color: "#7c3aed",
     link: "/compliance",
   },
   {
     key: "market",
-    label: "Select Target Market",
-    why: "Use AI insights to identify the best export destinations and buyer demand for your product.",
-    action: "Explore Markets",
+    labelKey: "readiness.journey.market.label",
+    whyKey: "readiness.journey.market.why",
+    actionKey: "readiness.journey.market.action",
     icon: <IcGlobe />,
     color: "#ca8a04",
     link: "/market",
   },
   {
     key: "profit",
-    label: "Calculate Export Profit",
-    why: "Simulate your FOB pricing, customs duties, margins, and overall profit potential.",
-    action: "Simulate Profit",
+    labelKey: "readiness.journey.profit.label",
+    whyKey: "readiness.journey.profit.why",
+    actionKey: "readiness.journey.profit.action",
     icon: <IcTrending />,
     color: "#dc2626",
     link: "/profit",
@@ -78,23 +79,24 @@ const JOURNEY = [
 
 // ── Detailed compliance audit checklist ───────────────────────────────────
 const CHECKS = [
-  { key: "iec",          label: "IEC Registration",          points: 20, detail: "Import Export Code from DGFT portal" },
-  { key: "product",      label: "Product Listed on Platform", points: 15, detail: "At least one product configured" },
-  { key: "apeda",        label: "APEDA / RCMC Registration",  points: 15, detail: "Required for agricultural & processed food exports" },
-  { key: "quality_cert", label: "Quality Certification",      points: 20, detail: "BIS / ISO / FSSAI / WHO-GMP as applicable" },
-  { key: "buyers",       label: "Buyer Contacts Identified",  points: 15, detail: "At least 3 verified international buyers" },
-  { key: "bank",         label: "Export Bank Account (EEFC)", points: 15, detail: "Exchange Earners Foreign Currency account" },
+  { key: "iec",          labelKey: "readiness.audit.iec.label",          points: 20, detailKey: "readiness.audit.iec.detail" },
+  { key: "product",      labelKey: "readiness.audit.product.label",      points: 15, detailKey: "readiness.audit.product.detail" },
+  { key: "apeda",        labelKey: "readiness.audit.apeda.label",        points: 15, detailKey: "readiness.audit.apeda.detail" },
+  { key: "quality_cert", labelKey: "readiness.audit.quality.label",      points: 20, detailKey: "readiness.audit.quality.detail" },
+  { key: "buyers",       labelKey: "readiness.audit.buyers.label",       points: 15, detailKey: "readiness.audit.buyers.detail" },
+  { key: "bank",         labelKey: "readiness.audit.bank.label",         points: 15, detailKey: "readiness.audit.bank.detail" },
 ];
 
 function getLevel(score) {
-  if (score >= 85) return { label: "Export Ready ✓", color: "#16a34a" };
-  if (score >= 60) return { label: "Almost Ready",    color: "#ca8a04" };
-  if (score >= 30) return { label: "Getting Started", color: "#2563eb" };
-  return                    { label: "Just Beginning", color: "#dc2626" };
+  if (score >= 85) return { labelKey: "readiness.level.exportReady", color: "#16a34a" };
+  if (score >= 60) return { labelKey: "readiness.level.almostReady", color: "#ca8a04" };
+  if (score >= 30) return { labelKey: "readiness.level.gettingStarted", color: "#2563eb" };
+  return                    { labelKey: "readiness.level.justBeginning", color: "#dc2626" };
 }
 
 function ExportReadiness() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   // Journey step completion state
   const [journey, setJourney] = useState({
@@ -112,6 +114,9 @@ function ExportReadiness() {
   const percent          = Math.round((completedCount / JOURNEY.length) * 100);
   const currentStepIdx   = JOURNEY.findIndex(j => !journey[j.key]);
   const currentStep      = currentStepIdx >= 0 ? JOURNEY[currentStepIdx] : null;
+  const stepsCompleteLabel = t("readiness.stepsComplete")
+    .replace("{completed}", completedCount)
+    .replace("{total}", JOURNEY.length);
 
   const auditScore = CHECKS.reduce((acc, c) => acc + (checked[c.key] ? c.points : 0), 0);
   const level      = getLevel(auditScore);
@@ -155,13 +160,13 @@ function ExportReadiness() {
             }}>R</div>
             <div>
               <div style={{ fontWeight: "800", fontSize: "1.1rem", letterSpacing: "-0.3px" }}>Rajesh Gupta</div>
-              <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.55)", marginTop: "2px" }}>Pro Exporter</div>
+              <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.55)", marginTop: "2px" }}>{t("nav.proExporter")}</div>
             </div>
           </div>
 
           {/* Section title */}
           <div style={{ fontSize: "0.7rem", fontWeight: "700", letterSpacing: "1.5px", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "0.6rem" }}>
-            Export Readiness Score
+            {t("readiness.title")}
           </div>
 
           {/* Segmented progress bar */}
@@ -176,9 +181,9 @@ function ExportReadiness() {
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
             <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.45)" }}>
-              {completedCount} of {JOURNEY.length} steps complete
+              {stepsCompleteLabel}
             </span>
-            <span style={{ fontSize: "1rem", fontWeight: "900", color: "#d4af37" }}>{percent}% Ready</span>
+            <span style={{ fontSize: "1rem", fontWeight: "900", color: "#d4af37" }}>{percent}% {t("readiness.ready")}</span>
           </div>
 
           {/* Level badge */}
@@ -188,7 +193,7 @@ function ExportReadiness() {
             borderRadius: "20px", padding: "0.35rem 0.875rem",
           }}>
             <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: level.color, flexShrink: 0 }} />
-            <span style={{ fontSize: "0.78rem", fontWeight: "700", color: "#d4af37" }}>{level.label}</span>
+            <span style={{ fontSize: "0.78rem", fontWeight: "700", color: "#d4af37" }}>{t(level.labelKey)}</span>
           </div>
         </div>
 
@@ -203,12 +208,12 @@ function ExportReadiness() {
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: `linear-gradient(90deg, ${currentStep.color}, transparent)` }} />
 
             <div style={{ fontSize: "0.63rem", fontWeight: "700", letterSpacing: "1.5px", textTransform: "uppercase", color: "#ca8a04", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "5px" }}>
-              <IcWarn /> Next Required Step
+              <IcWarn /> {t("readiness.nextStep")}
             </div>
 
             <div style={{ fontSize: "1rem", fontWeight: "800", color: "#0f1e3a", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "8px" }}>
               <span style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center", color: currentStep.color, flexShrink: 0 }}>{currentStep.icon}</span>
-              Step {currentStepIdx + 1}: {currentStep.label}
+              {t("readiness.step")} {currentStepIdx + 1}: {t(currentStep.labelKey)}
             </div>
 
             <div style={{
@@ -216,7 +221,7 @@ function ExportReadiness() {
               padding: "0.75rem", background: "#f8fafc", borderRadius: "6px",
               borderLeft: `3px solid ${currentStep.color}`, marginBottom: "1.25rem",
             }}>
-              <strong>Why this matters:</strong><br />{currentStep.why}
+              <strong>{t("readiness.whyMatters")}</strong><br />{t(currentStep.whyKey)}
             </div>
 
             <div style={{ display: "flex", gap: "0.75rem" }}>
@@ -230,7 +235,7 @@ function ExportReadiness() {
                 onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
                 onMouseLeave={e => e.currentTarget.style.opacity = "1"}
               >
-                {currentStep.action}
+                {t(currentStep.actionKey)}
               </button>
               <button
                 onClick={() => toggleJourney(currentStep.key)}
@@ -240,7 +245,7 @@ function ExportReadiness() {
                   fontSize: "0.79rem", fontWeight: "600", cursor: "pointer",
                 }}
               >
-                Mark Done
+                {t("readiness.markDone")}
               </button>
             </div>
           </div>
@@ -253,8 +258,8 @@ function ExportReadiness() {
             justifyContent: "center", textAlign: "center",
           }}>
             <div style={{ marginBottom: "0.75rem", color: "#16a34a" }}><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
-            <div style={{ fontWeight: "800", color: "#15803d", fontSize: "1.1rem" }}>All Steps Complete!</div>
-            <div style={{ fontSize: "0.82rem", color: "#16a34a", marginTop: "0.4rem" }}>Your export journey is fully set up.</div>
+            <div style={{ fontWeight: "800", color: "#15803d", fontSize: "1.1rem" }}>{t("readiness.allComplete")}</div>
+            <div style={{ fontSize: "0.82rem", color: "#16a34a", marginTop: "0.4rem" }}>{t("readiness.allCompleteDesc")}</div>
           </div>
         )}
       </div>
@@ -265,7 +270,7 @@ function ExportReadiness() {
         boxShadow: "0 2px 8px rgba(15,30,58,0.06)", border: "1px solid #e8ecf0",
       }}>
         <h2 style={{ color: "#0f1e3a", marginBottom: "1.5rem", fontSize: "1rem", fontWeight: "800", margin: "0 0 1.5rem", display: "flex", alignItems: "center", gap: "8px" }}>
-          <IcMap /> Export Journey — 5 Steps to Your First Shipment
+          <IcMap /> {t("readiness.journeyTitle")}
         </h2>
 
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -289,7 +294,7 @@ function ExportReadiness() {
                 <div style={{ position: "relative", zIndex: 1, flexShrink: 0 }}>
                   <div
                     onClick={() => toggleJourney(step.key)}
-                    title={done ? "Mark as incomplete" : "Mark as complete"}
+                    title={done ? t("readiness.markIncomplete") : t("readiness.markComplete")}
                     style={{
                       width: "40px", height: "40px", borderRadius: "50%",
                       background: done ? "#d4af37" : isCurrent ? step.color : "#f1f5f9",
@@ -322,21 +327,21 @@ function ExportReadiness() {
                           color: done ? "#854d0e" : isCurrent ? step.color : "#94a3b8",
                           transition: "color 0.3s ease",
                         }}>
-                          {step.label}
+                          {t(step.labelKey)}
                         </span>
                         {isCurrent && !done && (
                           <span style={{
                             background: step.color, color: "white",
                             fontSize: "0.58rem", fontWeight: "700",
                             padding: "2px 8px", borderRadius: "20px", letterSpacing: "0.5px", textTransform: "uppercase",
-                          }}>Current</span>
+                          }}>{t("profile.current")}</span>
                         )}
                         {done && (
                           <span style={{
                             background: "#fde68a", color: "#854d0e",
                             fontSize: "0.58rem", fontWeight: "700",
                             padding: "2px 8px", borderRadius: "20px", letterSpacing: "0.5px", textTransform: "uppercase",
-                          }}>Completed</span>
+                          }}>{t("readiness.completed")}</span>
                         )}
                       </div>
                       {(isCurrent || done) && (
@@ -353,13 +358,13 @@ function ExportReadiness() {
                           onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
                           onMouseLeave={e => e.currentTarget.style.opacity = "1"}
                         >
-                          {done ? "Undo" : step.action}
+                          {done ? t("readiness.undo") : t(step.actionKey)}
                         </button>
                       )}
                     </div>
                     {isCurrent && !done && (
                       <div style={{ fontSize: "0.77rem", color: "#4a5568", marginTop: "0.5rem", lineHeight: "1.55" }}>
-                        {step.why}
+                        {t(step.whyKey)}
                       </div>
                     )}
                   </div>
@@ -377,7 +382,7 @@ function ExportReadiness() {
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
           <h2 style={{ color: "#0f1e3a", fontSize: "1rem", fontWeight: "800", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-            <IcFileCheck /> Detailed Compliance Audit
+            <IcFileCheck /> {t("readiness.auditTitle")}
           </h2>
           {/* Mini score circle */}
           <div style={{ position: "relative", width: "72px", height: "72px", flexShrink: 0 }}>
@@ -422,8 +427,8 @@ function ExportReadiness() {
                   {done && <span style={{ color: "white", fontSize: "0.65rem", fontWeight: "900" }}>✓</span>}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: "700", color: done ? "#15803d" : "#0f1e3a", fontSize: "0.87rem" }}>{c.label}</div>
-                  <div style={{ fontSize: "0.73rem", color: "#64748b", marginTop: "1px" }}>{c.detail}</div>
+                  <div style={{ fontWeight: "700", color: done ? "#15803d" : "#0f1e3a", fontSize: "0.87rem" }}>{t(c.labelKey)}</div>
+                  <div style={{ fontSize: "0.73rem", color: "#64748b", marginTop: "1px" }}>{t(c.detailKey)}</div>
                 </div>
                 <span style={{
                   background: done ? "#16a34a" : "#e2e8f0",
@@ -432,7 +437,7 @@ function ExportReadiness() {
                   fontSize: "0.75rem", fontWeight: "700", flexShrink: 0,
                   transition: "all 0.2s ease",
                 }}>
-                  +{c.points} pts
+                  +{c.points} {t("readiness.points")}
                 </span>
               </div>
             );
@@ -442,12 +447,12 @@ function ExportReadiness() {
         {auditScore < 100 && remaining.length > 0 && (
           <div style={{ marginTop: "1.25rem", padding: "1rem 1.25rem", background: "linear-gradient(135deg, #0f1e3a 0%, #1a2f5a 100%)", borderRadius: "8px", color: "white" }}>
             <div style={{ fontWeight: "700", fontSize: "0.85rem", marginBottom: "0.4rem" }}>
-              Complete these to reach {Math.min(auditScore + nextGain, 100)}/100
+              {t("readiness.completeTo")} {Math.min(auditScore + nextGain, 100)}/100
             </div>
             <ul style={{ margin: 0, paddingLeft: "1.25rem", opacity: 0.85 }}>
               {remaining.slice(0, 3).map(c => (
                 <li key={c.key} style={{ fontSize: "0.8rem", lineHeight: "1.8" }}>
-                  {c.label} <span style={{ color: "#d4af37" }}>+{c.points} pts</span>
+                  {t(c.labelKey)} <span style={{ color: "#d4af37" }}>+{c.points} {t("readiness.points")}</span>
                 </li>
               ))}
             </ul>

@@ -1,5 +1,6 @@
 ﻿import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { useLanguage } from "../context/LanguageContext";
 
 // â”€â”€ SVG Icon components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const icons = {
@@ -87,20 +88,21 @@ const icons = {
 
 function Sidebar({ isCollapsed, toggleSidebar }) {
   const location = useLocation();
+  const { t } = useLanguage();
   const [hoveredPath, setHoveredPath] = useState(null);
 
   const navItems = [
-    { path: "/",            label: "Dashboard",       icon: icons.dashboard   },
-    { path: "/product",     label: "Add Product",     icon: icons.product     },
-    { path: "/market",      label: "Market Analysis", icon: icons.market      },
-    { path: "/profit",      label: "Profit Simulator",icon: icons.profit      },
-    { path: "/products",    label: "Marketplace",     icon: icons.products    },
-    { path: "/export-plan", label: "Export Plan",     icon: icons.exportPlan  },
-    { path: "/compliance",  label: "Compliance",      icon: icons.compliance  },
-    { path: "/readiness",   label: "Readiness Score", icon: icons.readiness   },
-    { path: "/reports",     label: "Reports",         icon: icons.reports     },
-    { path: "/docs",        label: "Documents",       icon: icons.docs        },
-    { path: "/chatbot",     label: "AI Advisor",      icon: icons.chatbot     },
+    { path: "/",            labelKey: "nav.dashboard",       icon: icons.dashboard   },
+    { path: "/product",     labelKey: "nav.addProduct",      icon: icons.product     },
+    { path: "/market",      labelKey: "nav.marketAnalysis",  icon: icons.market      },
+    { path: "/profit",      labelKey: "nav.profitSimulator", icon: icons.profit      },
+    { path: "/products",    labelKey: "nav.marketplace",     icon: icons.products    },
+    { path: "/export-plan", labelKey: "nav.exportPlan",      icon: icons.exportPlan  },
+    { path: "/compliance",  labelKey: "nav.compliance",      icon: icons.compliance  },
+    { path: "/readiness",   labelKey: "nav.readinessScore",  icon: icons.readiness   },
+    { path: "/reports",     labelKey: "nav.reports",         icon: icons.reports     },
+    { path: "/docs",        labelKey: "nav.documents",       icon: icons.docs        },
+    { path: "/chatbot",     labelKey: "nav.aiAdvisor",       icon: icons.chatbot     },
   ];
 
   const handleLogout = () => alert("Logging out...");
@@ -128,7 +130,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
         {/* Section label */}
         {!isCollapsed && (
           <div style={{ fontSize: "0.62rem", fontWeight: "700", letterSpacing: "1.5px", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", padding: "0 0.5rem", marginBottom: "6px" }}>
-            Navigation
+            {t("nav.navigation")}
           </div>
         )}
 
@@ -148,7 +150,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
                   boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
                   zIndex: 1001, pointerEvents: "none",
                 }}>
-                  {item.label}
+                  {t(item.labelKey)}
                   <div style={{ position: "absolute", right: "100%", top: "50%", transform: "translateY(-50%)", width: 0, height: 0, borderTop: "5px solid transparent", borderBottom: "5px solid transparent", borderRight: "5px solid #1e3a5f" }} />
                 </div>
               )}
@@ -173,7 +175,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
                 }}
               >
                 <span style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>{item.icon}</span>
-                {!isCollapsed && <span>{item.label}</span>}
+                {!isCollapsed && <span>{t(item.labelKey)}</span>}
               </Link>
             </div>
           );
@@ -198,7 +200,7 @@ function Sidebar({ isCollapsed, toggleSidebar }) {
           onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.45)"; }}
         >
           <span style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>{icons.settings}</span>
-          {!isCollapsed && <span>Settings</span>}
+          {!isCollapsed && <span>{t("nav.settings")}</span>}
         </button>
       </div>
 

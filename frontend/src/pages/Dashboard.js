@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, BarElement, ArcElement,
@@ -52,6 +53,7 @@ function MetricCard({ icon, label, value, sub, color, onClick }) {
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [productName, setProductName] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -65,22 +67,22 @@ function Dashboard() {
   }, []);
 
   const navCards = [
-    { icon: Ic.box,     title: "Add Product",      description: "Register products for export",               path: "/product",     color: "#0f1e3a" },
-    { icon: Ic.globe,   title: "Market Analysis",  description: "AI-powered global market intelligence",      path: "/market",      color: "#2563eb" },
-    { icon: Ic.profit,  title: "Profit Simulator", description: "Simulate FOB pricing & profitability",       path: "/profit",      color: "#16a34a" },
-    { icon: Ic.route,   title: "Export Plan",       description: "Timeline, schemes & compliance roadmap",    path: "/export-plan", color: "#ca8a04" },
-    { icon: Ic.shield,  title: "Compliance Check", description: "Rule-by-rule export compliance analysis",    path: "/compliance",  color: "#7c3aed" },
-    { icon: Ic.bar,     title: "Readiness Score",  description: "Track your export readiness progress",       path: "/readiness",   color: "#dc2626" },
+    { icon: Ic.box,     title: t("dash.productsListed"),   description: t("dash.nav.registerProducts"),  path: "/product",     color: "#0f1e3a" },
+    { icon: Ic.globe,   title: t("dash.marketsAnalyzed"),  description: t("dash.nav.marketIntelligence"), path: "/market",      color: "#2563eb" },
+    { icon: Ic.profit,  title: t("dash.potentialRevenue"), description: t("dash.nav.profitSim"),         path: "/profit",      color: "#16a34a" },
+    { icon: Ic.route,   title: t("nav.exportPlan"),        description: t("dash.nav.exportPlanDesc"),    path: "/export-plan", color: "#ca8a04" },
+    { icon: Ic.shield,  title: t("nav.compliance"),        description: t("dash.nav.complianceDesc"),    path: "/compliance",  color: "#7c3aed" },
+    { icon: Ic.bar,     title: t("dash.readinessScore"),   description: t("dash.nav.readinessDesc"),     path: "/readiness",   color: "#dc2626" },
   ];
 
   const analyze = async () => {
-    if (!productName.trim()) { alert("Please enter a product name"); return; }
+    if (!productName.trim()) { alert(t("dash.alertProductRequired")); return; }
     setError(""); setResult(null); setLoading(true);
     try {
       const res = await API.get("/dashboard-analysis", { params: { product: productName } });
       setResult(res.data);
     } catch (err) {
-      setError(err.response?.data?.detail || "Something went wrong");
+      setError(err.response?.data?.detail || t("dash.errorGeneric"));
     } finally { setLoading(false); }
   };
 
@@ -95,7 +97,7 @@ function Dashboard() {
   const barData = {
     labels: ["USA", "UAE", "Germany", "UK", "Japan", "Netherlands", "China"],
     datasets: [{
-      label: "India Export Volume (₹ Crore)",
+      label: t("dash.exportVolumeDataset"),
       data: [820000, 140000, 310000, 290000, 200000, 175000, 160000],
       backgroundColor: [
         "#0f1e3a", "#2563eb", "#16a34a", "#ca8a04", "#7c3aed", "#dc2626", "#0891b2"
@@ -123,7 +125,13 @@ function Dashboard() {
   };
 
   const donutData = {
-    labels: ["Agricultural", "Textiles", "Electronics", "Pharma", "Engineering"],
+    labels: [
+      t("dash.sectorAgricultural"),
+      t("dash.sectorTextiles"),
+      t("dash.sectorElectronics"),
+      t("dash.sectorPharma"),
+      t("dash.sectorEngineering"),
+    ],
     datasets: [{
       data: [18, 15, 22, 12, 33],
       backgroundColor: ["#16a34a", "#ca8a04", "#2563eb", "#7c3aed", "#0f1e3a"],
@@ -156,16 +164,16 @@ function Dashboard() {
             Rajesh Textiles Pvt Ltd · Mumbai
           </div>
           <h1 style={{ fontSize: "1.75rem", fontWeight: "800", marginBottom: "0.4rem", letterSpacing: "-0.5px", lineHeight: 1.2 }}>
-            Welcome to ExportReady
+            {t("dash.welcomeTitle")}
           </h1>
           <p style={{ fontSize: "0.85rem", opacity: 0.75, maxWidth: "520px", lineHeight: "1.7", marginBottom: "1.25rem" }}>
-            AI-powered export intelligence for Indian MSMEs. Analyze markets, simulate profits, ensure compliance — all in one platform.
+            {t("dash.heroSub")}
           </p>
 
           {/* ── Export Opportunities strip ────────────────────── */}
           <div style={{ marginBottom: "1rem" }}>
             <div style={{ fontSize: "0.63rem", fontWeight: "700", letterSpacing: "1.5px", textTransform: "uppercase", color: "rgba(212,175,55,0.7)", marginBottom: "0.6rem" }}>
-              🌍 Live Export Opportunities
+              {t("dash.liveOpportunities")}
             </div>
             <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
               {[
@@ -186,7 +194,7 @@ function Dashboard() {
                     <span style={{ color: "#4ade80", fontSize: "0.72rem", fontWeight: "800" }}>{opp.demand}</span>
                   </div>
                   <div style={{ fontSize: "0.7rem", opacity: 0.55 }}>{opp.product}</div>
-                  <div style={{ fontSize: "0.62rem", color: opp.color, marginTop: "3px", opacity: 0.85, fontWeight: "600" }}>Demand ↑</div>
+                  <div style={{ fontSize: "0.62rem", color: opp.color, marginTop: "3px", opacity: 0.85, fontWeight: "600" }}>{t("dash.demandUp")}</div>
                 </div>
               ))}
             </div>
@@ -196,14 +204,14 @@ function Dashboard() {
           {tradeData && (
             <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", background: "rgba(255,255,255,0.08)", borderRadius: "8px", padding: "0.75rem 1.25rem", border: "1px solid rgba(212,175,55,0.2)" }}>
               <div>
-                <div style={{ fontSize: "0.62rem", fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase", opacity: 0.6 }}>Live · {tradeData.source}</div>
+                <div style={{ fontSize: "0.62rem", fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase", opacity: 0.6 }}>{t("dash.live")} · {tradeData.source}</div>
                 <div style={{ fontSize: "1.25rem", fontWeight: "800", color: "#d4af37", lineHeight: 1.1 }}>{tradeData.india_export_value}</div>
-                <div style={{ fontSize: "0.7rem", opacity: 0.7 }}>India Rice (HS 1006) Annual Exports</div>
+                <div style={{ fontSize: "0.7rem", opacity: 0.7 }}>{t("dash.indiaRiceExports")}</div>
               </div>
               <div style={{ width: "1px", height: "36px", background: "rgba(255,255,255,0.15)" }} />
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: tradeData.live ? "#22c55e" : "#d4af37", boxShadow: tradeData.live ? "0 0 6px rgba(34,197,94,0.6)" : "none" }} />
-                <span style={{ fontSize: "0.72rem", opacity: 0.75 }}>{tradeData.live ? "Real-time" : "Estimated"}</span>
+                <span style={{ fontSize: "0.72rem", opacity: 0.75 }}>{tradeData.live ? t("dash.realTime") : t("dash.estimated")}</span>
               </div>
             </div>
           )}
@@ -212,25 +220,25 @@ function Dashboard() {
 
       {/* KPI Metric Strip ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(155px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
-        <MetricCard icon={Ic.box}     label="Products Listed"    value="3"      sub="Cotton Shirts, Rice, Spices" color="#0f1e3a" onClick={() => navigate("/product")} />
-        <MetricCard icon={Ic.globe}   label="Markets Analyzed"   value="7"      sub="USA, UAE, Germany…"          color="#2563eb" onClick={() => navigate("/market")} />
-        <MetricCard icon={Ic.doc}     label="Documents Ready"    value="6"      sub="Invoice, BoL, COO…"          color="#16a34a" onClick={() => navigate("/docs")} />
-        <MetricCard icon={Ic.money}   label="Potential Revenue"  value="$2.4M"  sub="Based on market analysis"   color="#ca8a04" />
-        <MetricCard icon={Ic.trendUp} label="Top Market"         value="UAE"    sub="Demand index: 94/100"        color="#7c3aed" onClick={() => navigate("/market")} />
-        <MetricCard icon={Ic.shield}  label="Readiness Score"    value="45/100" sub="Click to improve"            color="#dc2626" onClick={() => navigate("/readiness")} />
+        <MetricCard icon={Ic.box}     label={t("dash.productsListed")}   value="3"      sub="Cotton Shirts, Rice, Spices" color="#0f1e3a" onClick={() => navigate("/product")} />
+        <MetricCard icon={Ic.globe}   label={t("dash.marketsAnalyzed")}  value="7"      sub="USA, UAE, Germany…"          color="#2563eb" onClick={() => navigate("/market")} />
+        <MetricCard icon={Ic.doc}     label={t("dash.documentsReady")}   value="6"      sub="Invoice, BoL, COO…"          color="#16a34a" onClick={() => navigate("/docs")} />
+        <MetricCard icon={Ic.money}   label={t("dash.potentialRevenue")} value="$2.4M"  sub={t("dash.marketAnalysisBased")}   color="#ca8a04" />
+        <MetricCard icon={Ic.trendUp} label={t("dash.topMarket")}        value="UAE"    sub={`${t("dash.demandIndex")}: 94/100`} color="#7c3aed" onClick={() => navigate("/market")} />
+        <MetricCard icon={Ic.shield}  label={t("dash.readinessScore")}   value="45/100" sub={t("dash.clickToImprove")}    color="#dc2626" onClick={() => navigate("/readiness")} />
       </div>
 
       {/* Charts row ── */}
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1.5rem", marginBottom: "2rem" }}>
         <div style={{ background: "white", padding: "1.75rem", borderRadius: "10px", border: "1px solid #e8ecf0", boxShadow: "0 1px 2px rgba(15,30,58,0.05)" }}>
           <h3 style={{ color: "#0f1e3a", marginBottom: "1.25rem", fontSize: "0.9rem", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ color: "#2563eb" }}>{Ic.bar}</span> India Export Volume by Market
+            <span style={{ color: "#2563eb" }}>{Ic.bar}</span> {t("dash.exportVolumeChart")}
           </h3>
           <Bar data={barData} options={barOptions} />
         </div>
         <div style={{ background: "white", padding: "1.75rem", borderRadius: "10px", border: "1px solid #e8ecf0", boxShadow: "0 1px 2px rgba(15,30,58,0.05)" }}>
           <h3 style={{ color: "#0f1e3a", marginBottom: "1.25rem", fontSize: "0.9rem", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ color: "#7c3aed" }}>{Ic.pie}</span> Export Mix by Sector
+            <span style={{ color: "#7c3aed" }}>{Ic.pie}</span> {t("dash.exportMixChart")}
           </h3>
           <Doughnut data={donutData} options={donutOptions} />
         </div>
@@ -258,11 +266,11 @@ function Dashboard() {
       {/* Product Analysis Section ── */}
       <div style={{ background: "white", padding: "2rem", borderRadius: "10px", boxShadow: "0 1px 2px rgba(15,30,58,0.05)", border: "1px solid #e8ecf0", marginBottom: "2rem" }}>
         <h2 style={{ color: "#0f1e3a", marginBottom: "1.25rem", fontSize: "1.05rem", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ color: "#2563eb" }}>{Ic.search}</span> Quick Product Analysis
+          <span style={{ color: "#2563eb" }}>{Ic.search}</span> {t("dash.quickAnalysis")}
         </h2>
         <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem" }}>
           <input
-            placeholder="Enter product (e.g., Premium Cotton Shirts, Basmati Rice, Spices)"
+            placeholder={t("dash.productPlaceholder")}
             value={productName}
             onChange={e => setProductName(e.target.value)}
             onKeyPress={e => e.key === "Enter" && analyze()}
@@ -272,7 +280,7 @@ function Dashboard() {
           />
           <button onClick={analyze} disabled={loading}
             style={{ padding: "0.875rem 2rem", background: loading ? "#e2e8f0" : "linear-gradient(135deg,#ca8a04 0%,#a16207 100%)", color: loading ? "#4a5568" : "white", border: "none", borderRadius: "8px", fontSize: "0.85rem", fontWeight: "600", cursor: loading ? "not-allowed" : "pointer", textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
-            {loading ? "Analyzing..." : "Analyze"}
+            {loading ? t("dash.analyzing") : t("dash.analyze")}
           </button>
         </div>
 
@@ -280,17 +288,17 @@ function Dashboard() {
 
         {result && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginTop: "1rem" }}>
-            {sectionCard("#f0fdf4", "#d1fae5", "#16a34a", "Top Export Markets",
+            {sectionCard("#f0fdf4", "#d1fae5", "#16a34a", t("dash.topExportMarkets"),
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 {result.top_markets.map((m, i) => (
                   <div key={i} style={{ flex: "1 1 100px", padding: "1rem", background: "white", borderRadius: "8px", border: "1px solid #d1fae5", textAlign: "center", boxShadow: "0 1px 3px rgba(15,30,58,0.1)" }}>
                     <div style={{ fontWeight: "700", color: "#059669", fontSize: "0.95rem" }}>{m[0]}</div>
-                    <div style={{ fontSize: "0.7rem", color: "#6b7280", marginTop: "0.25rem" }}>Score: {m[1]}</div>
+                    <div style={{ fontSize: "0.7rem", color: "#6b7280", marginTop: "0.25rem" }}>{t("dash.scoreLabel")}: {m[1]}</div>
                   </div>
                 ))}
               </div>
             )}
-            {sectionCard("#faf5ff", "#e9d5ff", "#8b5cf6", "Opportunity Scores",
+            {sectionCard("#faf5ff", "#e9d5ff", "#8b5cf6", t("dash.opportunityScores"),
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <tbody>
                   {result.top_markets.map((m, i) => (
@@ -304,14 +312,14 @@ function Dashboard() {
                 </tbody>
               </table>
             )}
-            {sectionCard("#eff6ff", "#bfdbfe", "#2563eb", "Required Documents",
+            {sectionCard("#eff6ff", "#bfdbfe", "#2563eb", t("dash.requiredDocuments"),
               <ul style={{ margin: 0, paddingLeft: "1.25rem", listStyleType: "disc" }}>
                 {result.documents_required.map((doc, i) => (
                   <li key={i} style={{ padding: "0.35rem 0", color: "#1e40af", fontWeight: "500", fontSize: "0.85rem" }}>{doc[0]}</li>
                 ))}
               </ul>
             )}
-            {sectionCard("#fefce8", "#fde68a", "#ca8a04", "Potential Buyers",
+            {sectionCard("#fefce8", "#fde68a", "#ca8a04", t("dash.potentialBuyers"),
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 {result.potential_buyers.map((b, i) => (
                   <div key={i} style={{ flex: "1 1 100px", padding: "0.85rem", background: "white", borderRadius: "8px", border: "1px solid #fde68a", fontWeight: "600", color: "#92400e", textAlign: "center", fontSize: "0.85rem", boxShadow: "0 1px 3px rgba(15,30,58,0.1)" }}>{b[0]}</div>
@@ -319,7 +327,7 @@ function Dashboard() {
               </div>
             )}
             <div style={{ gridColumn: "1 / -1" }}>
-              {sectionCard("#f0fdf4", "#d1fae5", "#059669", "Estimated Profit",
+              {sectionCard("#f0fdf4", "#d1fae5", "#059669", t("dash.estimatedProfit"),
                 <div style={{ textAlign: "center", padding: "1rem 0" }}>
                   <span style={{ fontSize: "1.5rem", fontWeight: "800", color: "#059669" }}>{result.profit_estimation}</span>
                 </div>
@@ -331,14 +339,14 @@ function Dashboard() {
 
       {/* Impact Section ── */}
       <div style={{ background: "#0f1e3a", borderRadius: "10px", padding: "2rem 2.5rem", color: "white", marginBottom: "2rem" }}>
-        <h2 style={{ fontSize: "1.05rem", fontWeight: "700", marginBottom: "0.35rem", color: "#d4af37" }}>ExportReady Impact</h2>
-        <p style={{ opacity: 0.5, fontSize: "0.78rem", marginBottom: "1.75rem" }}>Why this platform matters for Indian MSMEs</p>
+        <h2 style={{ fontSize: "1.05rem", fontWeight: "700", marginBottom: "0.35rem", color: "#d4af37" }}>{t("dash.impactTitle")}</h2>
+        <p style={{ opacity: 0.5, fontSize: "0.78rem", marginBottom: "1.75rem" }}>{t("dash.impactSubtitle")}</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "1.25rem" }}>
           {[
-            { stat: "63 Million", desc: "MSMEs in India eligible to export" },
-            { stat: "Only 1.8%", desc: "Actually export today — massive opportunity" },
-            { stat: "₹4.2L/year", desc: "Average MSME loss due to wrong HS Codes" },
-            { stat: "70% fewer", desc: "Compliance errors with ExportReady" },
+            { stat: t("dash.impactStat1"), desc: t("dash.impactDesc1") },
+            { stat: t("dash.impactStat2"), desc: t("dash.impactDesc2") },
+            { stat: t("dash.impactStat3"), desc: t("dash.impactDesc3") },
+            { stat: t("dash.impactStat4"), desc: t("dash.impactDesc4") },
           ].map((item, i) => (
             <div key={i} style={{ textAlign: "center", padding: "1.25rem 1rem", background: "rgba(255,255,255,0.05)", borderRadius: "8px", border: "1px solid rgba(212,175,55,0.12)" }}>
               <div style={{ fontSize: "1.5rem", fontWeight: "800", color: "#d4af37", lineHeight: 1.1 }}>{item.stat}</div>
@@ -351,7 +359,7 @@ function Dashboard() {
       {/* Footer ── */}
       <div style={{ background: "white", border: "1px solid #e2e8f0", padding: "1.25rem 1.5rem", borderRadius: "8px", textAlign: "center" }}>
         <p style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
-          Enterprise-Grade Security · Global Compliance · Real-Time AI Analytics · Data: UN Comtrade 2023
+          {t("dash.footer")}
         </p>
       </div>
     </div>

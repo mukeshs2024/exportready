@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 
 // ── Static seed data (swap with API / localStorage in production) ──────────
 const INIT = {
@@ -42,9 +43,9 @@ const SCORE_HISTORY = [
 ];
 
 const EXP_LEVELS = [
-  { key: "Beginner", label: "Beginner",  desc: "New to exporting",                  color: "#2563eb", bg: "#eff6ff" },
-  { key: "Active",   label: "Active",    desc: "1–3 shipments/year",                color: "#ca8a04", bg: "#fefce8" },
-  { key: "Pro",      label: "Pro",       desc: "Regular exporter, established ops", color: "#16a34a", bg: "#f0fdf4" },
+  { key: "Beginner", color: "#2563eb", bg: "#eff6ff" },
+  { key: "Active",   color: "#ca8a04", bg: "#fefce8" },
+  { key: "Pro",      color: "#16a34a", bg: "#f0fdf4" },
 ];
 
 // ── Section SVG icons ────────────────────────────────────────────────────
@@ -135,6 +136,7 @@ function Field({ label, value, editing, name, onChange, mono }) {
 // ── Main component ────────────────────────────────────────────────────────
 export default function Profile() {
   const navigate    = useNavigate();
+  const { t }       = useLanguage();
   const [info, setInfo]       = useState(INIT);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft]     = useState(INIT);
@@ -172,22 +174,22 @@ export default function Profile() {
 
           {/* Name block */}
           <div style={{ flex: 1, minWidth: "200px" }}>
-            <div style={{ fontSize: "0.62rem", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: "#d4af37", marginBottom: "4px" }}>Export Passport</div>
+            <div style={{ fontSize: "0.62rem", fontWeight: "700", letterSpacing: "2px", textTransform: "uppercase", color: "#d4af37", marginBottom: "4px" }}>{t("profile.exportPassport")}</div>
             <h1 style={{ fontSize: "1.5rem", fontWeight: "900", margin: "0 0 2px", letterSpacing: "-0.4px" }}>{info.name}</h1>
             <div style={{ fontSize: "0.82rem", opacity: 0.6 }}>{info.company} · {info.city}</div>
 
             {/* Experience badge */}
             <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", marginTop: "0.75rem", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(212,175,55,0.25)", borderRadius: "20px", padding: "4px 12px" }}>
               <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: expLevel.color }} />
-              <span style={{ fontSize: "0.75rem", fontWeight: "700", color: "#d4af37" }}>{expLevel.label} Exporter</span>
-              <span style={{ fontSize: "0.68rem", opacity: 0.55 }}>· Since {info.since}</span>
+              <span style={{ fontSize: "0.75rem", fontWeight: "700", color: "#d4af37" }}>{t(`profile.${expLevel.key.toLowerCase()}`)} {t("profile.exporter")}</span>
+              <span style={{ fontSize: "0.68rem", opacity: 0.55 }}>· {t("profile.since")} {info.since}</span>
             </div>
           </div>
 
           {/* Completion score */}
           <div style={{ textAlign: "center", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", padding: "0.875rem 1.25rem", flexShrink: 0 }}>
             <div style={{ fontSize: "2rem", fontWeight: "900", color: completion >= 80 ? "#4ade80" : "#d4af37", lineHeight: 1 }}>{completion}%</div>
-            <div style={{ fontSize: "0.65rem", opacity: 0.55, marginTop: "3px", fontWeight: "600", letterSpacing: "0.5px", textTransform: "uppercase" }}>Profile Complete</div>
+            <div style={{ fontSize: "0.65rem", opacity: 0.55, marginTop: "3px", fontWeight: "600", letterSpacing: "0.5px", textTransform: "uppercase" }}>{t("profile.profileComplete")}</div>
             <div style={{ marginTop: "6px", width: "80px", height: "4px", background: "rgba(255,255,255,0.1)", borderRadius: "4px", overflow: "hidden" }}>
               <div style={{ width: `${completion}%`, height: "100%", background: completion >= 80 ? "#4ade80" : "#d4af37", transition: "width 0.5s ease", borderRadius: "4px" }} />
             </div>
@@ -208,13 +210,13 @@ export default function Profile() {
               <div style={{ fontSize: "0.82rem", fontWeight: "700", fontFamily: "monospace", color: "white" }}>{item.value}</div>
             </div>
           ))}
-          <button
+            <button
             onClick={() => navigate("/readiness")}
             style={{ padding: "0.5rem 1.125rem", background: "rgba(212,175,55,0.15)", border: "1px solid rgba(212,175,55,0.4)", borderRadius: "8px", color: "#d4af37", fontSize: "0.79rem", fontWeight: "700", cursor: "pointer", transition: "all 0.15s", display: "flex", alignItems: "center", gap: "6px" }}
             onMouseEnter={e => e.currentTarget.style.background = "rgba(212,175,55,0.25)"}
             onMouseLeave={e => e.currentTarget.style.background = "rgba(212,175,55,0.15)"}
           >
-            <IconChart /> View Readiness →
+              <IconChart /> {t("profile.viewReadiness")}
           </button>
         </div>
       </div>
@@ -224,39 +226,39 @@ export default function Profile() {
 
         {/* Business Details */}
         <Section
-          title="Business Details"
+          title={t("profile.businessDetails")}
           icon={<IconBuilding />}
           action={
             editing ? (
               <div style={{ display: "flex", gap: "6px" }}>
-                <button onClick={cancelEdit} style={{ padding: "0.3rem 0.75rem", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: "6px", fontSize: "0.75rem", fontWeight: "600", cursor: "pointer", color: "#374151" }}>Cancel</button>
-                <button onClick={saveEdit}   style={{ padding: "0.3rem 0.75rem", background: "#0f1e3a", border: "none", borderRadius: "6px", fontSize: "0.75rem", fontWeight: "600", cursor: "pointer", color: "white" }}>Save</button>
+                <button onClick={cancelEdit} style={{ padding: "0.3rem 0.75rem", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: "6px", fontSize: "0.75rem", fontWeight: "600", cursor: "pointer", color: "#374151" }}>{t("profile.cancel")}</button>
+                <button onClick={saveEdit}   style={{ padding: "0.3rem 0.75rem", background: "#0f1e3a", border: "none", borderRadius: "6px", fontSize: "0.75rem", fontWeight: "600", cursor: "pointer", color: "white" }}>{t("profile.save")}</button>
               </div>
             ) : (
               <button onClick={() => setEditing(true)} style={{ padding: "0.3rem 0.875rem", background: "transparent", border: "1px solid #e2e8f0", borderRadius: "6px", fontSize: "0.75rem", fontWeight: "600", cursor: "pointer", color: "#374151", transition: "all 0.15s", display: "flex", alignItems: "center", gap: "5px" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = "#0f1e3a"; e.currentTarget.style.color = "#0f1e3a"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#374151"; }}
-              ><IconEdit /> Edit</button>
+              ><IconEdit /> {t("profile.edit")}</button>
             )
           }
         >
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.875rem" }}>
-            <Field label="Company" name="company" value={editing ? draft.company : info.company} editing={editing} onChange={handleChange} />
-            <Field label="Business Type" name="business" value={editing ? draft.business : info.business} editing={editing} onChange={handleChange} />
-            <Field label="City" name="city" value={editing ? draft.city : info.city} editing={editing} onChange={handleChange} />
-            <Field label="State" name="state" value={editing ? draft.state : info.state} editing={editing} onChange={handleChange} />
-            <Field label="IEC Number" name="iec" value={editing ? draft.iec : info.iec} editing={editing} onChange={handleChange} mono />
-            <Field label="GST Number" name="gst" value={editing ? draft.gst : info.gst} editing={editing} onChange={handleChange} mono />
-            <Field label="Email" name="email" value={editing ? draft.email : info.email} editing={editing} onChange={handleChange} />
-            <Field label="Phone" name="phone" value={editing ? draft.phone : info.phone} editing={editing} onChange={handleChange} />
+            <Field label={t("profile.company")} name="company" value={editing ? draft.company : info.company} editing={editing} onChange={handleChange} />
+            <Field label={t("profile.businessType")} name="business" value={editing ? draft.business : info.business} editing={editing} onChange={handleChange} />
+            <Field label={t("profile.city")} name="city" value={editing ? draft.city : info.city} editing={editing} onChange={handleChange} />
+            <Field label={t("profile.state")} name="state" value={editing ? draft.state : info.state} editing={editing} onChange={handleChange} />
+            <Field label={t("profile.iecNumber")} name="iec" value={editing ? draft.iec : info.iec} editing={editing} onChange={handleChange} mono />
+            <Field label={t("profile.gstNumber")} name="gst" value={editing ? draft.gst : info.gst} editing={editing} onChange={handleChange} mono />
+            <Field label={t("profile.email")} name="email" value={editing ? draft.email : info.email} editing={editing} onChange={handleChange} />
+            <Field label={t("profile.phone")} name="phone" value={editing ? draft.phone : info.phone} editing={editing} onChange={handleChange} />
             <div style={{ gridColumn: "1/-1" }}>
-              <Field label="Website" name="website" value={editing ? draft.website : info.website} editing={editing} onChange={handleChange} />
+              <Field label={t("profile.website")} name="website" value={editing ? draft.website : info.website} editing={editing} onChange={handleChange} />
             </div>
           </div>
         </Section>
 
         {/* Export Experience */}
-        <Section title="Export Experience Level" icon={<IconTrophy />}>
+        <Section title={t("profile.experienceLevel")} icon={<IconTrophy />}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem", marginBottom: "1.25rem" }}>
             {EXP_LEVELS.map(level => {
               const active = info.experience === level.key;
@@ -274,17 +276,17 @@ export default function Profile() {
                 >
                   <div style={{ width: "14px", height: "14px", borderRadius: "50%", border: `2px solid ${level.color}`, background: active ? level.color : "white", flexShrink: 0, transition: "all 0.2s" }} />
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: "700", fontSize: "0.84rem", color: active ? level.color : "#374151" }}>{level.label}</div>
-                    <div style={{ fontSize: "0.72rem", color: "#64748b" }}>{level.desc}</div>
+                    <div style={{ fontWeight: "700", fontSize: "0.84rem", color: active ? level.color : "#374151" }}>{t(`profile.${level.key.toLowerCase()}`)}</div>
+                    <div style={{ fontSize: "0.72rem", color: "#64748b" }}>{t(`profile.${level.key.toLowerCase()}Desc`)}</div>
                   </div>
-                  {active && <span style={{ fontSize: "0.68rem", fontWeight: "700", color: level.color, background: level.bg, border: `1px solid ${level.color}30`, borderRadius: "10px", padding: "2px 8px" }}>Current</span>}
+                  {active && <span style={{ fontSize: "0.68rem", fontWeight: "700", color: level.color, background: level.bg, border: `1px solid ${level.color}30`, borderRadius: "10px", padding: "2px 8px" }}>{t("profile.current")}</span>}
                 </div>
               );
             })}
           </div>
 
           <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "1rem" }}>
-            <div style={{ fontSize: "0.7rem", fontWeight: "700", letterSpacing: "0.8px", textTransform: "uppercase", color: "#94a3b8", marginBottom: "0.5rem" }}>Readiness Score Progress</div>
+            <div style={{ fontSize: "0.7rem", fontWeight: "700", letterSpacing: "0.8px", textTransform: "uppercase", color: "#94a3b8", marginBottom: "0.5rem" }}>{t("profile.readinessProgress")}</div>
             <Sparkline data={SCORE_HISTORY} color="#d4af37" />
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
               {SCORE_HISTORY.map(d => (
@@ -298,11 +300,11 @@ export default function Profile() {
 
       {/* ── Products (full width) ─────────────────────────────────── */}
       <Section
-        title="Export Products"
+        title={t("profile.exportProducts")}
         icon={<IconBox />}
         action={
           <button onClick={() => navigate("/product")} style={{ padding: "0.3rem 0.875rem", background: "#0f1e3a", border: "none", borderRadius: "6px", fontSize: "0.75rem", fontWeight: "600", cursor: "pointer", color: "white" }}>
-            + Add Product
+            {t("profile.addProduct")}
           </button>
         }
       >
@@ -312,7 +314,7 @@ export default function Profile() {
               <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#0f1e3a12", display: "flex", alignItems: "center", justifyContent: "center", color: "#0f1e3a", flexShrink: 0 }}><IconBox /></div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: "700", fontSize: "0.87rem", color: "#0f1e3a" }}>{p.name}</div>
-                <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: "1px" }}>HS Code: <span style={{ fontFamily: "monospace", fontWeight: "600", color: "#374151" }}>{p.hs}</span></div>
+                <div style={{ fontSize: "0.72rem", color: "#64748b", marginTop: "1px" }}>{t("profile.hsCode")}: <span style={{ fontFamily: "monospace", fontWeight: "600", color: "#374151" }}>{p.hs}</span></div>
               </div>
               <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", justifyContent: "flex-end" }}>
                 {p.markets.map(m => (
@@ -325,7 +327,7 @@ export default function Profile() {
                 color:      p.status === "Active" ? "#16a34a"  : "#ca8a04",
                 border:     `1px solid ${p.status === "Active" ? "#86efac" : "#fde68a"}`,
                 flexShrink: 0,
-              }}>{p.status}</span>
+              }}>{p.status === "Active" ? t("profile.statusActive") : t("profile.statusDraft")}</span>
             </div>
           ))}
         </div>
@@ -333,29 +335,29 @@ export default function Profile() {
 
       {/* ── Target Countries ─────────────────────────────────────── */}
       <Section
-        title="Target Countries"
+        title={t("profile.targetCountries")}
         icon={<IconGlobe />}
         action={
           <button onClick={() => navigate("/market")} style={{ padding: "0.3rem 0.875rem", background: "transparent", border: "1px solid #e2e8f0", borderRadius: "6px", fontSize: "0.75rem", fontWeight: "600", cursor: "pointer", color: "#374151" }}>
-            Explore More →
+            {t("profile.exploreMore")}
           </button>
         }
       >
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "0.75rem" }}>
-          {TARGETS.map(t => (
-            <div key={t.country} style={{ padding: "0.875rem 1rem", background: "#f8fafc", borderRadius: "8px", border: "1px solid #f1f5f9" }}>
+          {TARGETS.map(tgt => (
+            <div key={tgt.country} style={{ padding: "0.875rem 1rem", background: "#f8fafc", borderRadius: "8px", border: "1px solid #f1f5f9" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "0.5rem" }}>
-                <div style={{ width: "30px", height: "22px", background: "#0f1e3a", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.58rem", fontWeight: "800", color: "white", letterSpacing: "0.5px", flexShrink: 0 }}>{t.code}</div>
-                <span style={{ fontWeight: "700", color: "#0f1e3a", fontSize: "0.87rem" }}>{t.country}</span>
+                <div style={{ width: "30px", height: "22px", background: "#0f1e3a", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.58rem", fontWeight: "800", color: "white", letterSpacing: "0.5px", flexShrink: 0 }}>{tgt.code}</div>
+                <span style={{ fontWeight: "700", color: "#0f1e3a", fontSize: "0.87rem" }}>{tgt.country}</span>
               </div>
               <div style={{ fontSize: "0.7rem", color: "#64748b", marginBottom: "6px" }}>
-                {t.sector} · since {t.since}
+                {tgt.sector} · {t("profile.since")} {tgt.since}
               </div>
               {/* Demand bar */}
               <div style={{ height: "5px", background: "#e2e8f0", borderRadius: "3px", overflow: "hidden" }}>
-                <div style={{ width: `${t.demand}%`, height: "100%", background: t.demand >= 80 ? "#16a34a" : t.demand >= 60 ? "#ca8a04" : "#2563eb", borderRadius: "3px", transition: "width 0.5s ease" }} />
+                <div style={{ width: `${tgt.demand}%`, height: "100%", background: tgt.demand >= 80 ? "#16a34a" : tgt.demand >= 60 ? "#ca8a04" : "#2563eb", borderRadius: "3px", transition: "width 0.5s ease" }} />
               </div>
-              <div style={{ fontSize: "0.66rem", color: "#94a3b8", marginTop: "3px" }}>Demand index: {t.demand}/100</div>
+              <div style={{ fontSize: "0.66rem", color: "#94a3b8", marginTop: "3px" }}>{t("profile.demandIndex")}: {tgt.demand}/100</div>
             </div>
           ))}
         </div>

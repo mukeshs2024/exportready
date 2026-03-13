@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import { useLanguage } from "../context/LanguageContext";
 
 // SVG icon components
 const GlobeIcon = () => (
@@ -68,11 +69,11 @@ const MenuIcons = {
   ),
 };
 
-const PROFILE_MENU = [
-  { icon: MenuIcons.profile,  label: "View Profile",     path: "/profile" },
-  { icon: MenuIcons.progress, label: "Export Progress",  path: "/readiness" },
-  { icon: MenuIcons.docs,     label: "My Documents",     path: "/docs" },
-  { icon: MenuIcons.settings, label: "Account Settings", path: "/settings" },
+const PROFILE_MENU_KEYS = [
+  { icon: MenuIcons.profile,  labelKey: "nav.viewProfile",     path: "/profile" },
+  { icon: MenuIcons.progress, labelKey: "nav.exportProgress",  path: "/readiness" },
+  { icon: MenuIcons.docs,     labelKey: "nav.myDocuments",     path: "/docs" },
+  { icon: MenuIcons.settings, labelKey: "nav.accountSettings", path: "/settings" },
 ];
 
 function Navbar() {
@@ -138,7 +139,7 @@ function Navbar() {
       }}>
         <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 6px rgba(34,197,94,0.6)" }} />
         <span style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.75)", fontWeight: "600", letterSpacing: "0.5px" }}>
-          All Systems Operational
+          {t("nav.allSystemsOk")}
         </span>
       </div>
 
@@ -165,8 +166,8 @@ function Navbar() {
           {notifOpen && (
             <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: "320px", background: "white", borderRadius: "12px", boxShadow: "0 8px 32px rgba(15,30,58,0.18)", border: "1px solid #e8ecf0", zIndex: 9999, overflow: "hidden" }}>
               <div style={{ padding: "0.875rem 1rem", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontWeight: "700", fontSize: "0.85rem", color: "#0f1e3a" }}>Notifications</span>
-                <span style={{ fontSize: "0.72rem", color: "#2563eb", cursor: "pointer", fontWeight: "600" }}>Mark all read</span>
+                <span style={{ fontWeight: "700", fontSize: "0.85rem", color: "#0f1e3a" }}>{t("nav.notifications")}</span>
+                <span style={{ fontSize: "0.72rem", color: "#2563eb", cursor: "pointer", fontWeight: "600" }}>{t("nav.markAllRead")}</span>
               </div>
               {NOTIFICATIONS.map(n => (
                 <div key={n.id} style={{ padding: "0.75rem 1rem", display: "flex", gap: "0.75rem", alignItems: "flex-start", background: n.isNew ? "#f8faff" : "white", borderBottom: "1px solid #f8fafc", cursor: "pointer", transition: "background 0.15s" }}
@@ -185,7 +186,7 @@ function Navbar() {
                 onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
                 onMouseLeave={e => e.currentTarget.style.background = "white"}
               >
-                <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: "500" }}>View all notifications</span>
+                <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: "500" }}>{t("nav.viewAll")}</span>
               </div>
             </div>
           )}
@@ -216,7 +217,7 @@ function Navbar() {
             </div>
             <div>
               <div style={{ fontSize: "0.82rem", fontWeight: "700", color: "white", lineHeight: 1 }}>Rajesh Gupta</div>
-              <div style={{ fontSize: "0.62rem", color: "#d4af37", fontWeight: "500", marginTop: "2px" }}>Pro Exporter</div>
+              <div style={{ fontSize: "0.62rem", color: "#d4af37", fontWeight: "500", marginTop: "2px" }}>{t("nav.proExporter")}</div>
             </div>
             {/* Chevron */}
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
@@ -235,21 +236,21 @@ function Navbar() {
                 </div>
                 <div>
                   <div style={{ fontWeight: "700", color: "#0f1e3a", fontSize: "0.87rem" }}>Rajesh Gupta</div>
-                  <div style={{ fontSize: "0.7rem", color: "#d4af37", fontWeight: "600", marginTop: "1px" }}>Pro Exporter</div>
+                  <div style={{ fontSize: "0.7rem", color: "#d4af37", fontWeight: "600", marginTop: "1px" }}>{t("nav.proExporter")}</div>
                 </div>
               </div>
 
               {/* Menu items */}
-              {PROFILE_MENU.map(item => (
+              {PROFILE_MENU_KEYS.map(item => (
                 <div
-                  key={item.label}
+                  key={item.labelKey}
                   onClick={() => { setProfileOpen(false); if (item.path) navigate(item.path); }}
                   style={{ padding: "0.7rem 1rem", display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer", fontSize: "0.83rem", color: "#374151", fontWeight: "500", transition: "background 0.15s", borderBottom: "1px solid #f8fafc" }}
                   onMouseEnter={e => e.currentTarget.style.background = "#f1f5f9"}
                   onMouseLeave={e => e.currentTarget.style.background = "white"}
                 >
                   <span style={{ width: "20px", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", flexShrink: 0 }}>{item.icon}</span>
-                  {item.label}
+                  {t(item.labelKey)}
                 </div>
               ))}
 
@@ -261,7 +262,7 @@ function Navbar() {
                 onMouseLeave={e => e.currentTarget.style.background = "white"}
               >
                 <span style={{ width: "20px", display: "flex", alignItems: "center", justifyContent: "center", color: "#dc2626", flexShrink: 0 }}>{MenuIcons.logout}</span>
-                Logout
+                {t("nav.logout")}
               </div>
             </div>
           )}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLanguage } from "../context/LanguageContext";
 
 // ── SVG icons ────────────────────────────────────────────────────────────────────
 // Section icons
@@ -127,6 +128,7 @@ function SelectField({ label, value, options, onChange }) {
 
 // ── Main component ────────────────────────────────────────────────────────
 export default function AccountSettings() {
+  const { language, setLanguage, t } = useLanguage();
   const [prefs, setPrefs] = useState(INIT_PREFS);
   const [integrations, setIntegrations] = useState(INTEGRATIONS);
   const [saved, setSaved] = useState(false);
@@ -155,8 +157,8 @@ export default function AccountSettings() {
       {/* ── Header ─────────────────────────────────────────────────── */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: "1.3rem", fontWeight: "800", color: "#0f1e3a", display: "flex", alignItems: "center", gap: "8px" }}><IcSettings /> Account Settings</h1>
-          <p style={{ margin: "4px 0 0", fontSize: "0.8rem", color: "#64748b" }}>Notifications, integrations, and preferences.</p>
+          <h1 style={{ margin: 0, fontSize: "1.3rem", fontWeight: "800", color: "#0f1e3a", display: "flex", alignItems: "center", gap: "8px" }}><IcSettings /> {t("settings.title")}</h1>
+          <p style={{ margin: "4px 0 0", fontSize: "0.8rem", color: "#64748b" }}>{t("settings.subtitle")}</p>
         </div>
         <button
           onClick={handleSave}
@@ -167,7 +169,7 @@ export default function AccountSettings() {
             fontSize: "0.84rem", fontWeight: "700", cursor: "pointer", transition: "all 0.2s",
           }}
         >
-          {saved ? "✓ Saved" : "Save Changes"}
+          {saved ? t("settings.saved") : t("settings.saveChanges")}
         </button>
       </div>
 
@@ -175,49 +177,55 @@ export default function AccountSettings() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
 
         {/* Notification Preferences */}
-        <Section title="Notification Preferences" icon={<IcBell />} desc="Choose which email alerts matter to your export operations.">
+        <Section title={t("settings.notifPrefs")} icon={<IcBell />} desc={t("settings.notifPrefsDesc")}>
           <Toggle
-            label="Compliance Deadlines"
-            sub="IEC renewal, RCMC expiry, FSSAI alerts"
+            label={t("settings.complianceDeadlines")}
+            sub={t("settings.complianceDeadlinesSub")}
             value={prefs.emailCompliance}
             onChange={() => toggle("emailCompliance")}
           />
           <Toggle
-            label="Market Opportunity Alerts"
-            sub="Demand spikes, tariff changes in target markets"
+            label={t("settings.marketAlerts")}
+            sub={t("settings.marketAlertsSub")}
             value={prefs.emailMarkets}
             onChange={() => toggle("emailMarkets")}
           />
           <Toggle
-            label="Document Readiness"
-            sub="When generated docs are ready to download"
+            label={t("settings.docReadiness")}
+            sub={t("settings.docReadinessSub")}
             value={prefs.emailDocuments}
             onChange={() => toggle("emailDocuments")}
           />
           <Toggle
-            label="Weekly Digest"
-            sub="Summary of your export readiness & activity"
+            label={t("settings.weeklyDigest")}
+            sub={t("settings.weeklyDigestSub")}
             value={prefs.emailWeekly}
             onChange={() => toggle("emailWeekly")}
           />
         </Section>
 
         {/* Language & Currency */}
-        <Section title="Language & Currency" icon={<IcGlobe />} desc="Display preferences for your region.">
+        <Section title={t("settings.langCurrency")} icon={<IcGlobe />} desc={t("settings.langCurrencyDesc")}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.625rem 0", borderBottom: "1px solid #f8fafc" }}>
+            <div style={{ fontSize: "0.84rem", fontWeight: "600", color: "#1e293b" }}>{t("settings.language")}</div>
+            <select
+              value={language}
+              onChange={e => setLanguage(e.target.value)}
+              style={{ padding: "0.35rem 0.75rem", border: "1.5px solid #e2e8f0", borderRadius: "7px", fontSize: "0.79rem", color: "#374151", background: "white", cursor: "pointer", outline: "none" }}
+            >
+              <option value="en">English</option>
+              <option value="hi">हिंदी</option>
+              <option value="ta">தமிழ்</option>
+            </select>
+          </div>
           <SelectField
-            label="Language"
-            value={prefs.language}
-            options={["English", "Hindi", "Gujarati", "Tamil", "Marathi"]}
-            onChange={v => setPrefs(p => ({ ...p, language: v }))}
-          />
-          <SelectField
-            label="Currency"
+            label={t("settings.currency")}
             value={prefs.currency}
             options={["INR (₹)", "USD ($)", "EUR (€)", "AED (د.إ)", "GBP (£)"]}
             onChange={v => setPrefs(p => ({ ...p, currency: v }))}
           />
           <SelectField
-            label="Timezone"
+            label={t("settings.timezone")}
             value={prefs.timezone}
             options={["Asia/Kolkata (IST)", "UTC", "America/New_York (EST)", "Europe/Berlin (CET)", "Asia/Dubai (GST)"]}
             onChange={v => setPrefs(p => ({ ...p, timezone: v }))}
@@ -226,7 +234,7 @@ export default function AccountSettings() {
           {/* Data Export */}
           <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid #f1f5f9" }}>
             <div style={{ fontSize: "0.7rem", fontWeight: "700", letterSpacing: "0.8px", textTransform: "uppercase", color: "#94a3b8", marginBottom: "0.625rem" }}>
-              Data & Privacy
+              {t("settings.dataPrivacy")}
             </div>
             <button
               onClick={handleDataExport}
@@ -234,7 +242,7 @@ export default function AccountSettings() {
               onMouseEnter={e => { e.currentTarget.style.borderColor = "#0f1e3a"; e.currentTarget.style.color = "#0f1e3a"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#374151"; }}
             >
-              <IcDownload /> Export My Data
+              <IcDownload /> {t("settings.exportData")}
               <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: "400" }}>(JSON)</span>
             </button>
           </div>
@@ -243,7 +251,7 @@ export default function AccountSettings() {
       </div>
 
       {/* ── Integrations (full width) ─────────────────────────────── */}
-      <Section title="Connected Integrations" icon={<IcLink />} desc="Link your government portals and logistics partners for automated sync.">
+      <Section title={t("settings.integrations")} icon={<IcLink />} desc={t("settings.integrationsDesc")}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "0.75rem" }}>
           {integrations.map(intg => (
             <div key={intg.id} style={{
@@ -269,7 +277,7 @@ export default function AccountSettings() {
                 onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
                 onMouseLeave={e => e.currentTarget.style.opacity = "1"}
               >
-                {intg.connected ? "Disconnect" : "Connect"}
+                {intg.connected ? t("settings.disconnect") : t("settings.connect")}
               </button>
             </div>
           ))}
@@ -277,13 +285,13 @@ export default function AccountSettings() {
       </Section>
 
       {/* ── Subscription Plan ─────────────────────────────────────── */}
-      <Section title="Subscription Plan" icon={<IcCreditCard />} desc="Manage your ExportReady plan.">
+      <Section title={t("settings.plan")} icon={<IcCreditCard />} desc={t("settings.planDesc")}>
         <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
 
           {/* Plan card */}
           <div style={{ flex: "1 1 260px", background: "linear-gradient(135deg, #0f1e3a 0%, #1a2f5a 100%)", borderRadius: "10px", padding: "1.25rem 1.5rem", color: "white", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: "-10px", right: "-10px", width: "80px", height: "80px", borderRadius: "50%", background: "rgba(212,175,55,0.08)" }} />
-            <div style={{ fontSize: "0.6rem", fontWeight: "700", letterSpacing: "1.5px", textTransform: "uppercase", color: "#d4af37", marginBottom: "4px" }}>Current Plan</div>
+            <div style={{ fontSize: "0.6rem", fontWeight: "700", letterSpacing: "1.5px", textTransform: "uppercase", color: "#d4af37", marginBottom: "4px" }}>{t("settings.currentPlan")}</div>
             <div style={{ fontSize: "1.3rem", fontWeight: "900", marginBottom: "2px" }}>{PLAN.name}</div>
             <div style={{ fontSize: "0.78rem", opacity: 0.6, marginBottom: "1rem" }}>{PLAN.billing} · Renews {PLAN.renewal}</div>
             <div style={{ fontSize: "1.1rem", fontWeight: "800", color: "#d4af37" }}>{PLAN.price}</div>
@@ -291,7 +299,7 @@ export default function AccountSettings() {
 
           {/* Features list */}
           <div style={{ flex: "1 1 260px" }}>
-            <div style={{ fontSize: "0.7rem", fontWeight: "700", letterSpacing: "0.8px", textTransform: "uppercase", color: "#94a3b8", marginBottom: "0.625rem" }}>Included Features</div>
+            <div style={{ fontSize: "0.7rem", fontWeight: "700", letterSpacing: "0.8px", textTransform: "uppercase", color: "#94a3b8", marginBottom: "0.625rem" }}>{t("settings.includedFeatures")}</div>
             {PLAN.features.map((f, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "0.45rem 0", borderBottom: i < PLAN.features.length - 1 ? "1px solid #f8fafc" : "none" }}>
                 <span style={{ color: "#16a34a", fontWeight: "700", fontSize: "0.85rem" }}>✓</span>
@@ -304,13 +312,13 @@ export default function AccountSettings() {
           <div style={{ flex: "0 0 auto", display: "flex", flexDirection: "column", gap: "8px", justifyContent: "center" }}>
             <button style={{ padding: "0.625rem 1.25rem", background: "#d4af37", border: "none", borderRadius: "8px", fontSize: "0.79rem", fontWeight: "700", color: "#0f1e3a", cursor: "pointer", transition: "opacity 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.opacity = "0.85"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-              Upgrade Plan
+              {t("settings.upgradePlan")}
             </button>
             <button style={{ padding: "0.625rem 1.25rem", background: "transparent", border: "1px solid #e2e8f0", borderRadius: "8px", fontSize: "0.79rem", fontWeight: "600", color: "#64748b", cursor: "pointer" }}>
-              View Invoices
+              {t("settings.viewInvoices")}
             </button>
             <button style={{ padding: "0.625rem 1.25rem", background: "transparent", border: "1px solid #fca5a5", borderRadius: "8px", fontSize: "0.79rem", fontWeight: "600", color: "#dc2626", cursor: "pointer" }}>
-              Cancel Plan
+              {t("settings.cancelPlan")}
             </button>
           </div>
         </div>

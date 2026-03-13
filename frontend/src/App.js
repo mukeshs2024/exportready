@@ -2,6 +2,7 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { LanguageProvider } from "./context/LanguageContext";
 
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
@@ -51,6 +52,7 @@ function App() {
   const closeAIChat = () => setIsAIChatOpen(false);
 
   return (
+    <LanguageProvider>
     <Router>
       {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
       {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
@@ -93,6 +95,7 @@ function App() {
       <AIPopup isOpen={isAIChatOpen} onClose={closeAIChat} onOpen={openAIChat} />
 
     </Router>
+    </LanguageProvider>
   );
 }
 
