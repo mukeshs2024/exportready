@@ -20,6 +20,8 @@ import ProductsMarketplace from "./pages/ProductsMarketplace";
 import Compliance from "./pages/Compliance";
 import Reports from "./pages/Reports";
 import DocumentGenerator from "./pages/DocumentGenerator";
+import Profile from "./pages/Profile";
+import AccountSettings from "./pages/AccountSettings";
 
 function App() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -55,17 +57,17 @@ function App() {
 
       <Navbar />
 
-      <div style={{ display: "flex", marginTop: "75px" }}>
+      <div style={{ display: "flex", marginTop: "64px" }}>
 
         <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
 
         <div className="main-content" style={{
-          marginLeft: isCollapsed ? "70px" : "220px",
+          marginLeft: isCollapsed ? "64px" : "216px",
           padding: "2rem 2.5rem",
           flex: 1,
-          minHeight: "calc(100vh - 75px)",
-          background: "linear-gradient(135deg, #f8f9fa 0%, #f0f3f7 100%)",
-          transition: "all 0.3s ease"
+          minHeight: "calc(100vh - 64px)",
+          background: "#f4f6f9",
+          transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
         }}>
 
           <Routes>
@@ -80,6 +82,8 @@ function App() {
             <Route path="/chatbot" element={<ExportAdvisor />} />
             <Route path="/docs" element={<DocumentGenerator />} />
             <Route path="/readiness" element={<ExportReadiness />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<AccountSettings />} />
           </Routes>
 
         </div>

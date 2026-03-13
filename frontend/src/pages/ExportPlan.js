@@ -6,17 +6,17 @@ import API from "../services/api";
 // ---------------------------------------------------------------------------
 function Timeline({ product }) {
   const steps = [
-    { month: "Month 1–2", step: "IEC Registration + APEDA / RCMC", icon: "📋" },
-    { month: "Month 3",   step: "Buyer Outreach + Send Product Samples", icon: "📦" },
-    { month: "Month 4–5", step: "Negotiate LC Terms + Finalize Pricing", icon: "🤝" },
-    { month: "Month 6",   step: "First Shipment + Submit Shipping Bill", icon: "🚢" },
-    { month: "Month 7+",  step: "Claim RoDTEP / Duty Drawback Refund", icon: "💰" },
+    { month: "Month 1–2", step: "IEC Registration + APEDA / RCMC",      num: "01" },
+    { month: "Month 3",   step: "Buyer Outreach + Send Product Samples", num: "02" },
+    { month: "Month 4–5", step: "Negotiate LC Terms + Finalize Pricing", num: "03" },
+    { month: "Month 6",   step: "First Shipment + Submit Shipping Bill", num: "04" },
+    { month: "Month 7+",  step: "Claim RoDTEP / Duty Drawback Refund",  num: "05" },
   ];
 
   return (
     <div style={{ marginTop: "0" }}>
       <h3 style={{ color: "#0f1e3a", marginBottom: "1.25rem", fontSize: "1rem", fontWeight: "700" }}>
-        🗓️ Export Timeline Roadmap
+        Export Timeline Roadmap
       </h3>
       <div style={{ position: "relative", paddingLeft: "1.5rem" }}>
         {/* Vertical line */}
@@ -45,7 +45,7 @@ function Timeline({ product }) {
               boxShadow: "0 1px 3px rgba(15,30,58,0.06)",
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ fontSize: "1.1rem" }}>{s.icon}</span>
+                <span style={{ fontSize: "0.68rem", fontWeight: "800", color: "rgba(255,255,255,0.8)", background: "#0f1e3a", borderRadius: "4px", padding: "0.1rem 0.4rem", letterSpacing: "0.5px" }}>{s.num}</span>
                 <span style={{
                   background: "#0f1e3a", color: "white", borderRadius: "4px",
                   padding: "0.15rem 0.5rem", fontSize: "0.7rem", fontWeight: "700"
@@ -72,7 +72,7 @@ function SchemeCards({ schemes }) {
   return (
     <div>
       <h3 style={{ color: "#0f1e3a", marginBottom: "1.25rem", fontSize: "1rem", fontWeight: "700" }}>
-        🏛️ Applicable Government Schemes
+        Applicable Government Schemes
       </h3>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem" }}>
         {schemes.map((scheme, i) => (

@@ -29,7 +29,7 @@ function MarketCard({ market, index }) {
       {/* Country header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
         <h3 style={{ margin: 0, color: "#0f1e3a", fontSize: "1.05rem", fontWeight: "800" }}>
-          🌍 {market.country}
+          {market.country}
         </h3>
         <span style={{
           background: c.badge, color: "white", borderRadius: "20px",
@@ -54,7 +54,7 @@ function MarketCard({ market, index }) {
       {/* Best route */}
       <div style={{ background: "white", borderRadius: "6px", padding: "0.6rem 0.75rem", border: "1px solid #e2e8f0" }}>
         <div style={{ fontSize: "0.68rem", color: "#64748b", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>Best Route</div>
-        <div style={{ fontSize: "0.83rem", color: "#0f1e3a", fontWeight: "600", marginTop: "0.2rem" }}>🚢 {market.best_route}</div>
+        <div style={{ fontSize: "0.83rem", color: "#0f1e3a", fontWeight: "600", marginTop: "0.2rem" }}>{market.best_route}</div>
       </div>
 
       {/* Buyers */}
@@ -208,7 +208,7 @@ function MarketAnalysis() {
             transition: "all 0.2s ease", textTransform: "uppercase", letterSpacing: "0.5px",
           }}
         >
-          {aiLoading ? "Generating..." : "🤖 AI Market Intelligence"}
+          {aiLoading ? "Generating..." : "AI Market Intelligence"}
         </button>
       </div>
 
@@ -219,7 +219,7 @@ function MarketAnalysis() {
       {(hsLoading || hsCode) && (
         <div style={{ marginTop: "2rem", padding: "1.25rem 1.5rem", background: "#f0fdf4", borderRadius: "8px", borderLeft: "4px solid #16a34a", border: "1px solid #d1fae5" }}>
           {hsLoading ? (
-            <p style={{ margin: 0, color: "#15803d", fontWeight: "600", fontSize: "0.85rem" }}>🔍 Looking up HS Code...</p>
+            <p style={{ margin: 0, color: "#15803d", fontWeight: "600", fontSize: "0.85rem" }}>Looking up HS Code...</p>
           ) : hsCode && (
             <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", flexWrap: "wrap" }}>
               <div>
@@ -241,7 +241,7 @@ function MarketAnalysis() {
         <div style={{ marginTop: "2rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.25rem" }}>
             <h3 style={{ margin: 0, color: "#0f1e3a", fontSize: "1rem", fontWeight: "800" }}>
-              🤖 AI Market Intelligence — <span style={{ color: "#7c3aed" }}>{aiMarkets.product}</span>
+              AI Market Intelligence — <span style={{ color: "#7c3aed" }}>{aiMarkets.product}</span>
             </h3>
             <span style={{ background: "#7c3aed", color: "white", borderRadius: "20px", padding: "0.2rem 0.65rem", fontSize: "0.7rem", fontWeight: "700" }}>
               AI-Generated

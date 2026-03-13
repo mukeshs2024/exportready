@@ -33,9 +33,9 @@ const STATIC_INSIGHTS = [
 ];
 
 const ALERTS = [
-  { icon: "⚠️", title: "Currency Risk", desc: "USD/INR at 83.2 — elevated volatility this quarter", color: "#fef3c7", border: "#d97706" },
-  { icon: "📦", title: "Seasonality Alert", desc: "Ramadan demand spike in UAE — stock up by Q2", color: "#f0fdf4", border: "#16a34a" },
-  { icon: "💰", title: "RoDTEP Available", desc: "Pending ₹1.2L in RoDTEP reimbursements on ICEGATE", color: "#eff6ff", border: "#2563eb" },
+  { color: "#d97706", title: "Currency Risk", desc: "USD/INR at 83.2 — elevated volatility this quarter", bg: "#fef3c7", border: "#d97706" },
+  { color: "#16a34a", title: "Seasonality Alert", desc: "Ramadan demand spike in UAE — stock up by Q2", bg: "#f0fdf4", border: "#16a34a" },
+  { color: "#2563eb", title: "RoDTEP Available", desc: "Pending ₹1.2L in RoDTEP reimbursements on ICEGATE", bg: "#eff6ff", border: "#2563eb" },
 ];
 
 function KPI({ label, value, sub, color }) {
@@ -214,9 +214,12 @@ function Reports() {
             </h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
               {ALERTS.map((a, i) => (
-                <div key={i} style={{ padding: "0.85rem 1rem", background: a.color, borderRadius: "8px", borderLeft: `3px solid ${a.border}` }}>
-                  <div style={{ fontWeight: "700", fontSize: "0.82rem", color: "#0f1e3a", marginBottom: "0.2rem" }}>{a.icon} {a.title}</div>
-                  <div style={{ fontSize: "0.77rem", color: "#4a5568" }}>{a.desc}</div>
+                <div key={i} style={{ padding: "0.85rem 1rem", background: a.bg, borderRadius: "8px", borderLeft: `3px solid ${a.border}`, display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: a.color, flexShrink: 0, marginTop: "4px", display: "inline-block" }} />
+                  <div>
+                    <div style={{ fontWeight: "700", fontSize: "0.82rem", color: "#0f1e3a", marginBottom: "0.2rem" }}>{a.title}</div>
+                    <div style={{ fontSize: "0.77rem", color: "#4a5568" }}>{a.desc}</div>
+                  </div>
                 </div>
               ))}
             </div>

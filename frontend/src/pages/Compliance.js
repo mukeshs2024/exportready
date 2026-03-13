@@ -3,12 +3,12 @@ import API from "../services/api";
 
 // Status config supports both new (PASS/WARN/FAIL) and legacy (green/yellow/red) keys
 const S = {
-  PASS:   { icon: "🟢", label: "PASS", bg: "#f0fdf4", text: "#15803d", border: "#86efac" },
-  WARN:   { icon: "🟡", label: "WARN", bg: "#fefce8", text: "#92400e", border: "#fde68a" },
-  FAIL:   { icon: "🔴", label: "FAIL", bg: "#fef2f2", text: "#b91c1c", border: "#fca5a5" },
-  green:  { icon: "🟢", label: "PASS", bg: "#f0fdf4", text: "#15803d", border: "#86efac" },
-  yellow: { icon: "🟡", label: "WARN", bg: "#fefce8", text: "#92400e", border: "#fde68a" },
-  red:    { icon: "🔴", label: "FAIL", bg: "#fef2f2", text: "#b91c1c", border: "#fca5a5" },
+  PASS:   { dot: "#16a34a", label: "PASS", bg: "#f0fdf4", text: "#15803d", border: "#86efac" },
+  WARN:   { dot: "#d97706", label: "WARN", bg: "#fefce8", text: "#92400e", border: "#fde68a" },
+  FAIL:   { dot: "#dc2626", label: "FAIL", bg: "#fef2f2", text: "#b91c1c", border: "#fca5a5" },
+  green:  { dot: "#16a34a", label: "PASS", bg: "#f0fdf4", text: "#15803d", border: "#86efac" },
+  yellow: { dot: "#d97706", label: "WARN", bg: "#fefce8", text: "#92400e", border: "#fde68a" },
+  red:    { dot: "#dc2626", label: "FAIL", bg: "#fef2f2", text: "#b91c1c", border: "#fca5a5" },
 };
 
 const TH = { padding: "0.85rem 1rem", textAlign: "left", color: "white", fontSize: "0.74rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px" };
@@ -140,7 +140,10 @@ function Compliance() {
 
       {error && (
         <div style={{ padding: "1rem 1.25rem", background: "#fef2f2", borderRadius: "8px", borderLeft: "4px solid #dc2626", marginBottom: "1.5rem" }}>
-          <span style={{ color: "#b91c1c", fontSize: "0.88rem", fontWeight: "600" }}>⚠️ {error}</span>
+          <span style={{ color: "#b91c1c", fontSize: "0.88rem", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {error}
+          </span>
         </div>
       )}
 
@@ -155,15 +158,15 @@ function Compliance() {
               <div style={{ display: "flex", gap: "0.75rem" }}>
                 <div style={{ flex: 1, padding: "1rem", background: "#f0fdf4", borderRadius: "8px", textAlign: "center", border: "1px solid #86efac" }}>
                   <div style={{ fontSize: "1.9rem", fontWeight: "900", color: "#16a34a" }}>{tally.pass}</div>
-                  <div style={{ fontSize: "0.75rem", fontWeight: "700", color: "#15803d" }}>🟢 PASS</div>
+                  <div style={{ fontSize: "0.74rem", fontWeight: "700", color: "#15803d", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />PASS</div>
                 </div>
                 <div style={{ flex: 1, padding: "1rem", background: "#fefce8", borderRadius: "8px", textAlign: "center", border: "1px solid #fde68a" }}>
                   <div style={{ fontSize: "1.9rem", fontWeight: "900", color: "#ca8a04" }}>{tally.warn}</div>
-                  <div style={{ fontSize: "0.75rem", fontWeight: "700", color: "#92400e" }}>🟡 WARN</div>
+                  <div style={{ fontSize: "0.74rem", fontWeight: "700", color: "#92400e", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#d97706", display: "inline-block" }} />WARN</div>
                 </div>
                 <div style={{ flex: 1, padding: "1rem", background: "#fef2f2", borderRadius: "8px", textAlign: "center", border: "1px solid #fca5a5" }}>
                   <div style={{ fontSize: "1.9rem", fontWeight: "900", color: "#dc2626" }}>{tally.fail}</div>
-                  <div style={{ fontSize: "0.75rem", fontWeight: "700", color: "#b91c1c" }}>🔴 FAIL</div>
+                  <div style={{ fontSize: "0.74rem", fontWeight: "700", color: "#b91c1c", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: "#dc2626", display: "inline-block" }} />FAIL</div>
                 </div>
               </div>
               {/* Meta info */}
@@ -174,8 +177,9 @@ function Compliance() {
                   {result.hs_code && <span><br /><strong style={{ color: "#0f1e3a" }}>HS Code:</strong> {result.hs_code}</span>}
                 </div>
                 {result.source === "ai" && (
-                  <span style={{ display: "inline-block", marginTop: "0.5rem", background: "#7c3aed", color: "white", borderRadius: "12px", padding: "0.15rem 0.6rem", fontSize: "0.7rem", fontWeight: "700" }}>
-                    🤖 AI-Powered
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", marginTop: "0.5rem", background: "#7c3aed", color: "white", borderRadius: "12px", padding: "0.15rem 0.6rem", fontSize: "0.7rem", fontWeight: "700" }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    AI-Powered
                   </span>
                 )}
               </div>
@@ -208,8 +212,9 @@ function Compliance() {
                       </td>
                       <td style={{ ...TD, fontWeight: "600", color: "#0f1e3a" }}>{item}</td>
                       <td style={{ ...TD, textAlign: "center" }}>
-                        <span style={{ display: "inline-block", background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: "20px", padding: "0.25rem 0.65rem", fontSize: "0.74rem", fontWeight: "800", whiteSpace: "nowrap" }}>
-                          {cfg.icon} {cfg.label}
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: "20px", padding: "0.25rem 0.65rem", fontSize: "0.74rem", fontWeight: "700", whiteSpace: "nowrap" }}>
+                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: cfg.dot, flexShrink: 0, display: "inline-block" }} />
+                          {cfg.label}
                         </span>
                       </td>
                       <td style={{ ...TD, color: "#4a5568" }}>{detail}</td>
