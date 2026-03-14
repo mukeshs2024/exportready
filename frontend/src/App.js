@@ -3,6 +3,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { LanguageProvider } from "./context/LanguageContext";
+import "./App.css";
 
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
@@ -25,7 +26,7 @@ import Profile from "./pages/Profile";
 import AccountSettings from "./pages/AccountSettings";
 
 function App() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed] = useState(false);
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -47,9 +48,17 @@ function App() {
     setShowOnboarding(false);
   };
 
-  const toggleSidebar = () => setIsCollapsed(!isCollapsed);
   const openAIChat = () => setIsAIChatOpen(true);
   const closeAIChat = () => setIsAIChatOpen(false);
+
+  const tickerItems = [
+    { flag: "🇦🇪", country: "UAE", product: "Cotton Shirts", change: "+18%", tone: "teal" },
+    { flag: "🇩🇪", country: "Germany", product: "Organic Textiles", change: "+9%", tone: "blue" },
+    { flag: "🇺🇸", country: "USA", product: "Spices", change: "+6%", tone: "teal" },
+    { flag: "🇯🇵", country: "Japan", product: "Home Linen", change: "+4%", tone: "blue" },
+    { flag: "🇸🇬", country: "Singapore", product: "Leather Goods", change: "-2%", tone: "red" },
+    { flag: "🇬🇧", country: "UK", product: "Agri Produce", change: "+7%", tone: "teal" },
+  ];
 
   return (
     <LanguageProvider>
@@ -59,21 +68,35 @@ function App() {
 
       <Navbar />
 
-      <div style={{ display: "flex", marginTop: "64px" }}>
+      <div className="aurora-ticker">
+        <div className="aurora-ticker-label">
+          <span /> Live
+        </div>
+        <div className="aurora-ticker-track">
+          {[...tickerItems, ...tickerItems].map((item, index) => (
+            <div key={`${item.country}-${index}`} className="aurora-ticker-item">
+              {item.flag} {item.country} · <strong>{item.product}</strong> · {" "}
+              <em style={{ color: item.tone === "red" ? "#FF4848" : item.tone === "blue" ? "#4894FF" : "#00D2AA" }}>
+                {item.change}
+              </em>
+            </div>
+          ))}
+        </div>
+        <div className="aurora-ticker-fade left" />
+        <div className="aurora-ticker-fade right" />
+      </div>
 
-        <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
+      <div style={{ display: "flex", marginTop: "86px" }}>
 
-        <div className="main-content" style={{
-          marginLeft: isCollapsed ? "64px" : "216px",
-          padding: "2rem 2.5rem",
+        <Sidebar isCollapsed={isCollapsed} />
+
+        <div className="aurora-main" style={{
+          marginLeft: "220px",
           flex: 1,
-          minHeight: "calc(100vh - 64px)",
-          background: "#f4f6f9",
-          transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
         }}>
-
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
+          <div className="aurora-container">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
             <Route path="/product" element={<ProductForm />} />
             <Route path="/market" element={<MarketAnalysis />} />
             <Route path="/profit" element={<ProfitSimulator />} />
@@ -86,8 +109,8 @@ function App() {
             <Route path="/readiness" element={<ExportReadiness />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<AccountSettings />} />
-          </Routes>
-
+            </Routes>
+          </div>
         </div>
 
       </div>

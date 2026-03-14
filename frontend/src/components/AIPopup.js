@@ -94,47 +94,50 @@ function AIPopup({ isOpen, onClose, onOpen }) {
   };
 
   if (!isOpen) return (
-    <div style={{position: "fixed", right: "2rem", bottom: "5rem", zIndex: 1999, display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem"}}>
+    <div style={{position: "fixed", right: "2rem", bottom: "2rem", zIndex: 1999, display: "flex", alignItems: "center", gap: "0.75rem"}}>
       <button
         onClick={onOpen}
         title="Open AI Advisor"
         style={{
-          width: "60px",
-          height: "60px",
+          width: "48px",
+          height: "48px",
           borderRadius: "50%",
-          background: "linear-gradient(135deg, #0f1e3a 0%, #1a2f5a 100%)",
-          border: "3px solid #d4af37",
-          color: "white",
-          fontSize: "1.4rem",
+          background: "#FFFFFF",
+          border: "2px solid #F5A623",
+          color: "#0F172A",
+          fontSize: "1.2rem",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: "0 8px 24px rgba(15, 30, 58, 0.3)",
-          transition: "all 0.3s ease",
+          boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+          transition: "all 0.2s ease",
           transform: "scale(1)"
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.1)";
-          e.currentTarget.style.boxShadow = "0 12px 32px rgba(212, 175, 55, 0.4)";
+          e.currentTarget.style.transform = "scale(1.08)";
+          e.currentTarget.style.boxShadow = "0 10px 24px rgba(0,0,0,0.12)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 8px 24px rgba(15, 30, 58, 0.3)";
+          e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.08)";
         }}
       >
-        🤖
+        💬
       </button>
-      <p style={{
-        margin: 0,
-        fontSize: "0.75rem",
-        color: "#0f1e3a",
-        fontWeight: "600",
-        whiteSpace: "nowrap",
-        letterSpacing: "0.5px"
-      }}>
-        Chat Helper
-      </p>
+      <div style={{ position: "relative" }}>
+        <div style={{ position: "absolute", top: "-6px", right: "-6px", width: "16px", height: "16px", borderRadius: "50%", background: "#FF4848", color: "white", fontSize: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "JetBrains Mono, monospace" }}>
+          3
+        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
+        <div style={{ fontSize: "12px", color: "#0F172A", fontWeight: 600, whiteSpace: "nowrap" }}>
+          AI Export Advisor
+        </div>
+        <div style={{ fontSize: "11px", color: "#94A3B8", whiteSpace: "nowrap" }}>
+          Ask anything about exporting
+        </div>
+      </div>
     </div>
   );
 
@@ -147,9 +150,9 @@ function AIPopup({ isOpen, onClose, onOpen }) {
       top: isOpen ? `${position.y}px` : "auto",
       width: "25vw",
       height: "75vh",
-      background: "#f8f9fa",
-      boxShadow: "-8px 0 24px rgba(15, 30, 58, 0.2)",
-      borderLeft: "2px solid #d4af37",
+      background: "#FFFFFF",
+      boxShadow: "-12px 0 32px rgba(0, 0, 0, 0.12)",
+      borderLeft: "2px solid #F5A623",
       display: "flex",
       flexDirection: "column",
       zIndex: 2000,
@@ -160,13 +163,13 @@ function AIPopup({ isOpen, onClose, onOpen }) {
       <div 
         onMouseDown={handleMouseDown}
         style={{
-          background: "linear-gradient(135deg, #0f1e3a 0%, #1a2f5a 100%)",
-          color: "white",
+          background: "#FFFFFF",
+          color: "#0F172A",
           padding: "1.5rem",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "2px solid #d4af37",
+          borderBottom: "1px solid #E6ECF3",
           cursor: isDragging ? "grabbing" : "grab",
           userSelect: "none"
         }}
@@ -175,7 +178,7 @@ function AIPopup({ isOpen, onClose, onOpen }) {
           <h3 style={{ margin: 0, fontSize: "0.95rem", fontWeight: "800" }}>
             🤖 AI Advisor
           </h3>
-          <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.75rem", opacity: 0.9 }}>
+          <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.75rem", color: "#94A3B8" }}>
             Global Trade Helper
           </p>
         </div>
@@ -187,7 +190,7 @@ function AIPopup({ isOpen, onClose, onOpen }) {
           style={{
             background: "transparent",
             border: "none",
-            color: "white",
+            color: "#0F172A",
             fontSize: "1.2rem",
             cursor: "pointer",
             padding: "0",

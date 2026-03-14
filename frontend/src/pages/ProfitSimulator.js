@@ -10,6 +10,13 @@ function ProfitSimulator() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const demoResult = {
+    product: "Cotton Shirts",
+    market: "UAE",
+    profitPerUnit: 2.4,
+    shipping: 0.7,
+    duty: 5,
+  };
 
   const calculateProfit = async () => {
     if (!productPrice.trim() || !productionCost.trim() || !shippingCost.trim() || !dutyPercentage.trim()) {
@@ -40,6 +47,42 @@ function ProfitSimulator() {
   return (
     <div style={{background: "white", padding: "3rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)", border: "1px solid #e2e8f0"}}>
       <h2 style={{color: "#0f1e3a", marginBottom: "2.5rem", fontSize: "1.4rem", fontWeight: "800"}}><span style={{marginRight: "0.75rem"}}>₹</span>Profit Simulator</h2>
+
+      <div style={{
+        padding: "1.25rem 1.5rem",
+        borderRadius: "12px",
+        border: "1px solid #e2e8f0",
+        background: "linear-gradient(135deg, #fff7ed 0%, #fff1e6 100%)",
+        boxShadow: "0 4px 10px rgba(15, 30, 58, 0.08)",
+        marginBottom: "2rem",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.6rem" }}>
+          <div style={{ fontSize: "0.78rem", fontWeight: "800", letterSpacing: "1px", textTransform: "uppercase", color: "#92400e" }}>
+            Profit Simulator Result Card
+          </div>
+          <div style={{ fontSize: "0.9rem", fontWeight: "800", color: "#0f1e3a" }}>
+            Estimated Profit: ${demoResult.profitPerUnit.toFixed(2)} / unit
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}>
+          <div style={{ background: "white", borderRadius: "8px", padding: "0.75rem 1rem", border: "1px solid #fed7aa" }}>
+            <div style={{ fontSize: "0.7rem", color: "#9a3412", fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>Product</div>
+            <div style={{ fontSize: "0.9rem", color: "#0f1e3a", fontWeight: "700", marginTop: "0.2rem" }}>{demoResult.product}</div>
+          </div>
+          <div style={{ background: "white", borderRadius: "8px", padding: "0.75rem 1rem", border: "1px solid #fed7aa" }}>
+            <div style={{ fontSize: "0.7rem", color: "#9a3412", fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>Market</div>
+            <div style={{ fontSize: "0.9rem", color: "#0f1e3a", fontWeight: "700", marginTop: "0.2rem" }}>{demoResult.market}</div>
+          </div>
+          <div style={{ background: "white", borderRadius: "8px", padding: "0.75rem 1rem", border: "1px solid #fed7aa" }}>
+            <div style={{ fontSize: "0.7rem", color: "#9a3412", fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>Shipping</div>
+            <div style={{ fontSize: "0.9rem", color: "#0f1e3a", fontWeight: "700", marginTop: "0.2rem" }}>${demoResult.shipping.toFixed(2)}</div>
+          </div>
+          <div style={{ background: "white", borderRadius: "8px", padding: "0.75rem 1rem", border: "1px solid #fed7aa" }}>
+            <div style={{ fontSize: "0.7rem", color: "#9a3412", fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase" }}>Duty</div>
+            <div style={{ fontSize: "0.9rem", color: "#0f1e3a", fontWeight: "700", marginTop: "0.2rem" }}>{demoResult.duty}%</div>
+          </div>
+        </div>
+      </div>
 
       <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem"}}>
         <div>

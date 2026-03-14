@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { ComposableMap, Geographies, Geography, Line, Marker } from "react-simple-maps";
 import API from "../services/api";
 
 // ---------------------------------------------------------------------------
@@ -92,6 +93,52 @@ function MarketAnalysis() {
   // HS Code
   const [hsCode, setHsCode] = useState(null);
   const [hsLoading, setHsLoading] = useState(false);
+  const [tooltip, setTooltip] = useState(null);
+  const mapRef = useRef(null);
+
+  const routes = [
+    {
+      id: "uae",
+      from: [77, 28],
+      to: [54.4, 24.3],
+      color: "#10B981",
+      tooltip: "UAE\nCotton Shirts\nDemand +22%\nTariff 5%\nLogistics $0.70",
+    },
+    {
+      id: "germany",
+      from: [77, 28],
+      to: [10.4, 51.2],
+      color: "#2F6BFF",
+      tooltip: "Germany\nOrganic Textiles\nDemand +9%\nTariff 7%\nLogistics $0.82",
+    },
+    {
+      id: "usa",
+      from: [77, 28],
+      to: [-98.5, 39.8],
+      color: "#F5A623",
+      tooltip: "USA\nSpices\nDemand +6%\nTariff 4%\nLogistics $1.10",
+    },
+  ];
+
+  const handleMarkerEnter = (event, content) => {
+    const bounds = mapRef.current?.getBoundingClientRect();
+    if (!bounds) return;
+    setTooltip({
+      x: event.clientX - bounds.left + 12,
+      y: event.clientY - bounds.top + 12,
+      content,
+    });
+  };
+
+  const handleMarkerMove = (event) => {
+    if (!tooltip || !mapRef.current) return;
+    const bounds = mapRef.current.getBoundingClientRect();
+    setTooltip(prev => ({
+      ...prev,
+      x: event.clientX - bounds.left + 12,
+      y: event.clientY - bounds.top + 12,
+    }));
+  };
 
   const analyze = async () => {
     if (!productName.trim()) {
@@ -254,6 +301,85 @@ function MarketAnalysis() {
           </div>
         </div>
       )}
+
+      {/* Country Opportunity Map */}
+      <div style={{ marginTop: "2.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "1rem" }}>
+          <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#16a34a" }} />
+          <h3 style={{ margin: 0, color: "#0f1e3a", fontSize: "1rem", fontWeight: "800" }}>Country Opportunity Map</h3>
+        </div>
+        <div
+          className="aurora-map"
+          ref={mapRef}
+          onMouseMove={handleMarkerMove}
+          style={{ boxShadow: "0 4px 12px rgba(15, 30, 58, 0.08)" }}
+        >
+          {tooltip && (
+            <div className="aurora-tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
+              {tooltip.content.split("\n").map((line, index) => (
+                <div key={index}>{line}</div>
+              ))}
+            </div>
+          )}
+          <ComposableMap projectionConfig={{ scale: 150 }}>
+            <Geographies geography="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json">
+              {({ geographies }) =>
+                geographies.map(geo => {
+                  const isIndia = geo.properties.NAME === "India";
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill={isIndia ? "#F5A623" : "#D6DFEC"}
+                      stroke="#E3E9F3"
+                      strokeWidth={0.5}
+                    />
+                  );
+                })
+              }
+            </Geographies>
+
+            {routes.map(route => (
+              <Line
+                key={route.id}
+                from={route.from}
+                to={route.to}
+                stroke={route.color}
+                strokeWidth={1}
+                strokeDasharray="3 3"
+              />
+            ))}
+
+            {routes.map(route => (
+              <Marker key={`${route.id}-dest`} coordinates={route.to}>
+                <circle
+                  r={4}
+                  fill={route.color}
+                  className="aurora-pulse-node"
+                  onMouseEnter={(event) => handleMarkerEnter(event, route.tooltip)}
+                  onMouseLeave={() => setTooltip(null)}
+                />
+              </Marker>
+            ))}
+
+            <Marker coordinates={[77, 28]}>
+              <circle r={5} fill="#F5A623" />
+            </Marker>
+          </ComposableMap>
+
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "0.75rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.75rem", color: "#475569" }}>
+              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#10B981" }} /> High demand
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.75rem", color: "#475569" }}>
+              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#2F6BFF" }} /> Rising interest
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.75rem", color: "#475569" }}>
+              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#F5A623" }} /> Premium market
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Divider between DB and AI results */}
       {result && aiMarkets && (

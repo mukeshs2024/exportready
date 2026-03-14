@@ -1,64 +1,22 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLanguage } from "../context/LanguageContext";
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, BarElement, ArcElement,
   Title, Tooltip, Legend,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
+import { ComposableMap, Geographies, Geography, Line, Marker } from "react-simple-maps";
+import { Globe, Sparkles, ShieldCheck, TrendingUp } from "lucide-react";
 import API from "../services/api";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
-// ── SVG icons ──────────────────────────────────────────────────────────────
-const Ic = {
-  box: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>,
-  globe: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
-  doc: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
-  money: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
-  trendUp: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
-  shield: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>,
-  bar: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
-  pie: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>,
-  search: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-  check: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
-  users: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-  rocket: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
-  profit: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
-  route: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
-};
-
-// ── Metric card ─────────────────────────────────────────────────
-function MetricCard({ icon, label, value, sub, color, onClick }) {
-  return (
-    <div
-      onClick={onClick}
-      style={{
-        background: "white", border: "1px solid #e8ecf0", borderRadius: "10px",
-        padding: "1.25rem", cursor: onClick ? "pointer" : "default",
-        transition: "all 0.2s ease", boxShadow: "0 1px 2px rgba(15,30,58,0.05)",
-        borderLeft: `3px solid ${color}`,
-      }}
-      onMouseEnter={e => { if (onClick) { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(15,30,58,0.10)"; } }}
-      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 2px rgba(15,30,58,0.05)"; }}
-    >
-      <div style={{ color, marginBottom: "0.75rem", display: "flex", alignItems: "center" }}>{icon}</div>
-      <div style={{ fontSize: "1.4rem", fontWeight: "800", color: "#0f1e3a", lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: "0.76rem", fontWeight: "600", color: "#374151", marginTop: "0.3rem" }}>{label}</div>
-      {sub && <div style={{ fontSize: "0.7rem", color: "#9ca3af", marginTop: "0.2rem" }}>{sub}</div>}
-    </div>
-  );
-}
-
 function Dashboard() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
-  const [productName, setProductName] = useState("");
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [tradeData, setTradeData] = useState(null);
+  const [tooltip, setTooltip] = useState(null);
+  const mapRef = useRef(null);
 
   useEffect(() => {
     API.get("/trade-volume", { params: { product_hs: "1006" } })
@@ -66,41 +24,71 @@ function Dashboard() {
       .catch(() => {});
   }, []);
 
-  const navCards = [
-    { icon: Ic.box,     title: t("dash.productsListed"),   description: t("dash.nav.registerProducts"),  path: "/product",     color: "#0f1e3a" },
-    { icon: Ic.globe,   title: t("dash.marketsAnalyzed"),  description: t("dash.nav.marketIntelligence"), path: "/market",      color: "#2563eb" },
-    { icon: Ic.profit,  title: t("dash.potentialRevenue"), description: t("dash.nav.profitSim"),         path: "/profit",      color: "#16a34a" },
-    { icon: Ic.route,   title: t("nav.exportPlan"),        description: t("dash.nav.exportPlanDesc"),    path: "/export-plan", color: "#ca8a04" },
-    { icon: Ic.shield,  title: t("nav.compliance"),        description: t("dash.nav.complianceDesc"),    path: "/compliance",  color: "#7c3aed" },
-    { icon: Ic.bar,     title: t("dash.readinessScore"),   description: t("dash.nav.readinessDesc"),     path: "/readiness",   color: "#dc2626" },
+  const insightCards = [
+    { label: "Products Listed", value: "3", accent: "#2F6BFF" },
+    { label: "Markets Analyzed", value: "7", accent: "#10B981" },
+    { label: "Potential Revenue", value: "$2.4M", accent: "#F5A623" },
+    { label: "Top Market", value: "UAE", accent: "#7C3AED" },
+    { label: "Export Readiness", value: "45/100", accent: "#2F6BFF" },
   ];
 
-  const analyze = async () => {
-    if (!productName.trim()) { alert(t("dash.alertProductRequired")); return; }
-    setError(""); setResult(null); setLoading(true);
-    try {
-      const res = await API.get("/dashboard-analysis", { params: { product: productName } });
-      setResult(res.data);
-    } catch (err) {
-      setError(err.response?.data?.detail || t("dash.errorGeneric"));
-    } finally { setLoading(false); }
+  const routes = [
+    {
+      id: "uae",
+      from: [77, 28],
+      to: [54.4, 24.3],
+      color: "#10B981",
+      tooltip: "UAE\nCotton Shirts\nDemand +22%\nTariff 5%\nLogistics $0.70",
+    },
+    {
+      id: "germany",
+      from: [77, 28],
+      to: [10.4, 51.2],
+      color: "#2F6BFF",
+      tooltip: "Germany\nOrganic Textiles\nDemand +9%\nTariff 7%\nLogistics $0.82",
+    },
+    {
+      id: "usa",
+      from: [77, 28],
+      to: [-98.5, 39.8],
+      color: "#F5A623",
+      tooltip: "USA\nSpices\nDemand +6%\nTariff 4%\nLogistics $1.10",
+    },
+  ];
+
+  const handleMarkerEnter = (event, content) => {
+    const bounds = mapRef.current?.getBoundingClientRect();
+    if (!bounds) return;
+    setTooltip({
+      x: event.clientX - bounds.left + 12,
+      y: event.clientY - bounds.top + 12,
+      content,
+    });
   };
 
-  const sectionCard = (bg, border, borderLeft, title, children) => (
-    <div style={{ padding: "1.75rem", background: bg, borderRadius: "10px", border: `1px solid ${border}`, borderLeft: `4px solid ${borderLeft}` }}>
-      <h3 style={{ color: "#0f1e3a", marginBottom: "1rem", fontSize: "1rem", fontWeight: "700" }}>{title}</h3>
-      {children}
-    </div>
-  );
+  const handleMarkerMove = (event) => {
+    if (!tooltip || !mapRef.current) return;
+    const bounds = mapRef.current.getBoundingClientRect();
+    setTooltip(prev => ({
+      ...prev,
+      x: event.clientX - bounds.left + 12,
+      y: event.clientY - bounds.top + 12,
+    }));
+  };
 
-  // Chart data — India's top export market volumes (₹ Cr, illustrative)
   const barData = {
-    labels: ["USA", "UAE", "Germany", "UK", "Japan", "Netherlands", "China"],
+    labels: ["UAE", "USA", "Germany", "Japan", "UK", "Singapore", "France"],
     datasets: [{
-      label: t("dash.exportVolumeDataset"),
-      data: [820000, 140000, 310000, 290000, 200000, 175000, 160000],
+      label: "Demand",
+      data: [94, 82, 77, 70, 68, 64, 58],
       backgroundColor: [
-        "#0f1e3a", "#2563eb", "#16a34a", "#ca8a04", "#7c3aed", "#dc2626", "#0891b2"
+        "rgba(47,107,255,0.85)",
+        "rgba(47,107,255,0.65)",
+        "rgba(47,107,255,0.55)",
+        "rgba(47,107,255,0.45)",
+        "rgba(47,107,255,0.35)",
+        "rgba(47,107,255,0.25)",
+        "rgba(47,107,255,0.2)",
       ],
       borderRadius: 6,
       borderSkipped: false,
@@ -109,259 +97,229 @@ function Dashboard() {
 
   const barOptions = {
     responsive: true,
-    plugins: {
-      legend: { display: false },
-      title: { display: false },
-      tooltip: {
-        callbacks: {
-          label: ctx => `₹ ${(ctx.raw / 100000).toFixed(1)}L Cr`,
-        },
-      },
-    },
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, title: { display: false } },
     scales: {
-      y: { ticks: { callback: v => `₹${(v / 100000).toFixed(0)}L Cr` }, grid: { color: "#f1f5f9" } },
-      x: { grid: { display: false } },
+      y: { ticks: { color: "#64748B", font: { size: 10 } }, grid: { color: "#E6ECF3" } },
+      x: { ticks: { color: "#94A3B8", font: { size: 10 } }, grid: { display: false } },
     },
   };
 
   const donutData = {
-    labels: [
-      t("dash.sectorAgricultural"),
-      t("dash.sectorTextiles"),
-      t("dash.sectorElectronics"),
-      t("dash.sectorPharma"),
-      t("dash.sectorEngineering"),
-    ],
+    labels: ["Agricultural", "Textiles", "Electronics", "Pharma", "Engineering"],
     datasets: [{
       data: [18, 15, 22, 12, 33],
-      backgroundColor: ["#16a34a", "#ca8a04", "#2563eb", "#7c3aed", "#0f1e3a"],
+      backgroundColor: ["#10B981", "#F5A623", "#2F6BFF", "#7C3AED", "#94A3B8"],
       borderWidth: 2,
-      borderColor: "white",
+      borderColor: "#FFFFFF",
     }],
   };
 
   const donutOptions = {
     responsive: true,
-    plugins: {
-      legend: { position: "bottom", labels: { font: { size: 11 }, padding: 12 } },
-    },
-    cutout: "65%",
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    cutout: "68%",
   };
 
   return (
-    <div>
-      {/* Hero ── */}
-      <div style={{
-        background: "#0f1e3a",
-        color: "white", padding: "2rem 2.5rem", borderRadius: "10px",
-        marginBottom: "1.5rem", boxShadow: "0 2px 8px rgba(15,30,58,0.12)",
-        border: "1px solid rgba(212,175,55,0.15)", position: "relative", overflow: "hidden",
-      }}>
-        {/* subtle grid */}
-        <div style={{ position: "absolute", inset: 0, opacity: 0.02, backgroundImage: "linear-gradient(#d4af37 1px, transparent 1px), linear-gradient(90deg, #d4af37 1px, transparent 1px)", backgroundSize: "32px 32px", pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: "0.68rem", fontWeight: "700", letterSpacing: "2px", color: "#d4af37", textTransform: "uppercase", marginBottom: "0.5rem" }}>
-            Rajesh Textiles Pvt Ltd · Mumbai
-          </div>
-          <h1 style={{ fontSize: "1.75rem", fontWeight: "800", marginBottom: "0.4rem", letterSpacing: "-0.5px", lineHeight: 1.2 }}>
-            {t("dash.welcomeTitle")}
-          </h1>
-          <p style={{ fontSize: "0.85rem", opacity: 0.75, maxWidth: "520px", lineHeight: "1.7", marginBottom: "1.25rem" }}>
-            {t("dash.heroSub")}
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <div className="aurora-hero">
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ fontSize: "12px", color: "#94A3B8" }}>ExportReady — Mumbai, India</div>
+          <h1 className="aurora-hero-title">Discover Your Next Export Market</h1>
+          <p style={{ fontSize: "14px", color: "#475569", maxWidth: "380px" }}>
+            Find global demand, understand compliance,
+            and estimate profits in minutes.
           </p>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button className="aurora-cta primary" onClick={() => navigate("/market")}>Analyze My Product</button>
+            <button className="aurora-cta" onClick={() => navigate("/market")}>Explore Global Markets</button>
+          </div>
+        </div>
 
-          {/* ── Export Opportunities strip ────────────────────── */}
-          <div style={{ marginBottom: "1rem" }}>
-            <div style={{ fontSize: "0.63rem", fontWeight: "700", letterSpacing: "1.5px", textTransform: "uppercase", color: "rgba(212,175,55,0.7)", marginBottom: "0.6rem" }}>
-              {t("dash.liveOpportunities")}
-            </div>
-            <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
-              {[
-                { flag: "🇩🇪", country: "Germany",   product: "Cotton Shirts",    demand: "+12%", color: "#60a5fa" },
-                { flag: "🇦🇪", country: "UAE",        product: "Basmati Rice",     demand: "+22%", color: "#4ade80" },
-                { flag: "🇺🇸", country: "USA",        product: "Spices & Herbs",   demand: "+8%",  color: "#fbbf24" },
-                { flag: "🇯🇵", country: "Japan",      product: "Organic Textiles", demand: "+15%", color: "#c084fc" },
-                { flag: "🇬🇧", country: "UK",         product: "Leather Goods",   demand: "+10%", color: "#fb923c" },
-              ].map(opp => (
-                <div key={opp.country}
-                  onClick={() => navigate("/market")}
-                  style={{ flex: "1 1 120px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "0.625rem 0.875rem", cursor: "pointer", transition: "all 0.2s ease" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.11)"; e.currentTarget.style.borderColor = "rgba(212,175,55,0.35)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "3px" }}>
-                    <span style={{ fontSize: "0.85rem" }}>{opp.flag} <span style={{ fontWeight: "700", fontSize: "0.78rem" }}>{opp.country}</span></span>
-                    <span style={{ color: "#4ade80", fontSize: "0.72rem", fontWeight: "800" }}>{opp.demand}</span>
-                  </div>
-                  <div style={{ fontSize: "0.7rem", opacity: 0.55 }}>{opp.product}</div>
-                  <div style={{ fontSize: "0.62rem", color: opp.color, marginTop: "3px", opacity: 0.85, fontWeight: "600" }}>{t("dash.demandUp")}</div>
-                </div>
+        <div className="aurora-map" ref={mapRef} onMouseMove={handleMarkerMove}>
+          {tooltip && (
+            <div className="aurora-tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
+              {tooltip.content.split("\n").map((line, index) => (
+                <div key={index}>{line}</div>
               ))}
             </div>
-          </div>
-
-          {/* Live trade data pill (when backend is active) */}
-          {tradeData && (
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", background: "rgba(255,255,255,0.08)", borderRadius: "8px", padding: "0.75rem 1.25rem", border: "1px solid rgba(212,175,55,0.2)" }}>
-              <div>
-                <div style={{ fontSize: "0.62rem", fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase", opacity: 0.6 }}>{t("dash.live")} · {tradeData.source}</div>
-                <div style={{ fontSize: "1.25rem", fontWeight: "800", color: "#d4af37", lineHeight: 1.1 }}>{tradeData.india_export_value}</div>
-                <div style={{ fontSize: "0.7rem", opacity: 0.7 }}>{t("dash.indiaRiceExports")}</div>
-              </div>
-              <div style={{ width: "1px", height: "36px", background: "rgba(255,255,255,0.15)" }} />
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: tradeData.live ? "#22c55e" : "#d4af37", boxShadow: tradeData.live ? "0 0 6px rgba(34,197,94,0.6)" : "none" }} />
-                <span style={{ fontSize: "0.72rem", opacity: 0.75 }}>{tradeData.live ? t("dash.realTime") : t("dash.estimated")}</span>
-              </div>
-            </div>
           )}
+          <ComposableMap projectionConfig={{ scale: 140 }}>
+            <Geographies geography="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json">
+              {({ geographies }) =>
+                geographies.map(geo => {
+                  const isIndia = geo.properties.NAME === "India";
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill={isIndia ? "#F5A623" : "#D6DFEC"}
+                      stroke="#E3E9F3"
+                      strokeWidth={0.5}
+                    />
+                  );
+                })
+              }
+            </Geographies>
+
+            {routes.map(route => (
+              <Line
+                key={route.id}
+                from={route.from}
+                to={route.to}
+                stroke={route.color}
+                strokeWidth={1}
+                strokeDasharray="3 3"
+              />
+            ))}
+
+            {routes.map(route => (
+              <Marker key={`${route.id}-dest`} coordinates={route.to}>
+                <circle
+                  r={4}
+                  fill={route.color}
+                  className="aurora-pulse-node"
+                  onMouseEnter={(event) => handleMarkerEnter(event, route.tooltip)}
+                  onMouseLeave={() => setTooltip(null)}
+                />
+              </Marker>
+            ))}
+
+            <Marker coordinates={[77, 28]}>
+              <circle r={5} fill="#F5A623" />
+            </Marker>
+          </ComposableMap>
         </div>
       </div>
 
-      {/* KPI Metric Strip ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(155px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
-        <MetricCard icon={Ic.box}     label={t("dash.productsListed")}   value="3"      sub="Cotton Shirts, Rice, Spices" color="#0f1e3a" onClick={() => navigate("/product")} />
-        <MetricCard icon={Ic.globe}   label={t("dash.marketsAnalyzed")}  value="7"      sub="USA, UAE, Germany…"          color="#2563eb" onClick={() => navigate("/market")} />
-        <MetricCard icon={Ic.doc}     label={t("dash.documentsReady")}   value="6"      sub="Invoice, BoL, COO…"          color="#16a34a" onClick={() => navigate("/docs")} />
-        <MetricCard icon={Ic.money}   label={t("dash.potentialRevenue")} value="$2.4M"  sub={t("dash.marketAnalysisBased")}   color="#ca8a04" />
-        <MetricCard icon={Ic.trendUp} label={t("dash.topMarket")}        value="UAE"    sub={`${t("dash.demandIndex")}: 94/100`} color="#7c3aed" onClick={() => navigate("/market")} />
-        <MetricCard icon={Ic.shield}  label={t("dash.readinessScore")}   value="45/100" sub={t("dash.clickToImprove")}    color="#dc2626" onClick={() => navigate("/readiness")} />
-      </div>
-
-      {/* Charts row ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1.5rem", marginBottom: "2rem" }}>
-        <div style={{ background: "white", padding: "1.75rem", borderRadius: "10px", border: "1px solid #e8ecf0", boxShadow: "0 1px 2px rgba(15,30,58,0.05)" }}>
-          <h3 style={{ color: "#0f1e3a", marginBottom: "1.25rem", fontSize: "0.9rem", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ color: "#2563eb" }}>{Ic.bar}</span> {t("dash.exportVolumeChart")}
-          </h3>
-          <Bar data={barData} options={barOptions} />
-        </div>
-        <div style={{ background: "white", padding: "1.75rem", borderRadius: "10px", border: "1px solid #e8ecf0", boxShadow: "0 1px 2px rgba(15,30,58,0.05)" }}>
-          <h3 style={{ color: "#0f1e3a", marginBottom: "1.25rem", fontSize: "0.9rem", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ color: "#7c3aed" }}>{Ic.pie}</span> {t("dash.exportMixChart")}
-          </h3>
-          <Doughnut data={donutData} options={donutOptions} />
-        </div>
-      </div>
-
-      {/* Navigation quick-access grid ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginBottom: "2rem" }}>
-        {navCards.map(card => (
-          <div key={card.path} onClick={() => navigate(card.path)}
-            style={{ background: "white", border: "1px solid #e8ecf0", borderRadius: "10px", padding: "1.125rem", cursor: "pointer", transition: "all 0.2s ease", boxShadow: "0 1px 2px rgba(15,30,58,0.05)", display: "flex", alignItems: "center", gap: "0.875rem" }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(15,30,58,0.10)"; e.currentTarget.style.borderLeft = `3px solid ${card.color}`; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 2px rgba(15,30,58,0.05)"; e.currentTarget.style.borderLeft = "1px solid #e8ecf0"; }}
-          >
-            <div style={{ width: "38px", height: "38px", borderRadius: "8px", background: `${card.color}12`, display: "flex", alignItems: "center", justifyContent: "center", color: card.color, flexShrink: 0 }}>
-              {card.icon}
-            </div>
-            <div>
-              <div style={{ fontWeight: "600", color: "#0f1e3a", fontSize: "0.87rem" }}>{card.title}</div>
-              <div style={{ fontSize: "0.71rem", color: "#9ca3af", lineHeight: "1.4", marginTop: "0.1rem" }}>{card.description}</div>
+      <div className="aurora-card-grid">
+        {insightCards.map(card => (
+          <div key={card.label} className="aurora-card">
+            <div className="aurora-card-top" style={{ background: card.accent }} />
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div className="aurora-icon-badge" style={{ background: `${card.accent}14`, color: card.accent }}>
+                <TrendingUp size={16} />
+              </div>
+              <div>
+                <div style={{ fontSize: "12px", color: "#94A3B8" }}>{card.label}</div>
+                <div style={{ fontSize: "24px", fontWeight: 700, color: "#0F172A", marginTop: "4px" }}>{card.value}</div>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Product Analysis Section ── */}
-      <div style={{ background: "white", padding: "2rem", borderRadius: "10px", boxShadow: "0 1px 2px rgba(15,30,58,0.05)", border: "1px solid #e8ecf0", marginBottom: "2rem" }}>
-        <h2 style={{ color: "#0f1e3a", marginBottom: "1.25rem", fontSize: "1.05rem", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ color: "#2563eb" }}>{Ic.search}</span> {t("dash.quickAnalysis")}
-        </h2>
-        <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem" }}>
-          <input
-            placeholder={t("dash.productPlaceholder")}
-            value={productName}
-            onChange={e => setProductName(e.target.value)}
-            onKeyPress={e => e.key === "Enter" && analyze()}
-            style={{ flex: 1, padding: "0.875rem 1rem", border: "1.5px solid #e2e8f0", borderRadius: "8px", fontSize: "0.85rem", fontFamily: "inherit" }}
-            onFocus={e => { e.target.style.borderColor = "#0f1e3a"; e.target.style.boxShadow = "0 0 0 3px rgba(15,30,58,0.1)"; }}
-            onBlur={e => { e.target.style.boxShadow = "none"; e.target.style.borderColor = "#e2e8f0"; }}
-          />
-          <button onClick={analyze} disabled={loading}
-            style={{ padding: "0.875rem 2rem", background: loading ? "#e2e8f0" : "linear-gradient(135deg,#ca8a04 0%,#a16207 100%)", color: loading ? "#4a5568" : "white", border: "none", borderRadius: "8px", fontSize: "0.85rem", fontWeight: "600", cursor: loading ? "not-allowed" : "pointer", textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>
-            {loading ? t("dash.analyzing") : t("dash.analyze")}
-          </button>
-        </div>
-
-        {error && <p style={{ color: "#dc2626", padding: "1rem", background: "#fee2e2", borderRadius: "6px", borderLeft: "3px solid #dc2626" }}>{error}</p>}
-
-        {result && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginTop: "1rem" }}>
-            {sectionCard("#f0fdf4", "#d1fae5", "#16a34a", t("dash.topExportMarkets"),
-              <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                {result.top_markets.map((m, i) => (
-                  <div key={i} style={{ flex: "1 1 100px", padding: "1rem", background: "white", borderRadius: "8px", border: "1px solid #d1fae5", textAlign: "center", boxShadow: "0 1px 3px rgba(15,30,58,0.1)" }}>
-                    <div style={{ fontWeight: "700", color: "#059669", fontSize: "0.95rem" }}>{m[0]}</div>
-                    <div style={{ fontSize: "0.7rem", color: "#6b7280", marginTop: "0.25rem" }}>{t("dash.scoreLabel")}: {m[1]}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {sectionCard("#faf5ff", "#e9d5ff", "#8b5cf6", t("dash.opportunityScores"),
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <tbody>
-                  {result.top_markets.map((m, i) => (
-                    <tr key={i} style={{ borderBottom: "1px solid #f3e8ff" }}>
-                      <td style={{ padding: "0.6rem 0", fontWeight: "600", color: "#1a202c", fontSize: "0.85rem" }}>{m[0]}</td>
-                      <td style={{ padding: "0.6rem 0", textAlign: "right" }}>
-                        <span style={{ background: "#8b5cf6", color: "white", padding: "0.2rem 0.75rem", borderRadius: "12px", fontSize: "0.75rem", fontWeight: "700" }}>{m[1]}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            {sectionCard("#eff6ff", "#bfdbfe", "#2563eb", t("dash.requiredDocuments"),
-              <ul style={{ margin: 0, paddingLeft: "1.25rem", listStyleType: "disc" }}>
-                {result.documents_required.map((doc, i) => (
-                  <li key={i} style={{ padding: "0.35rem 0", color: "#1e40af", fontWeight: "500", fontSize: "0.85rem" }}>{doc[0]}</li>
-                ))}
-              </ul>
-            )}
-            {sectionCard("#fefce8", "#fde68a", "#ca8a04", t("dash.potentialBuyers"),
-              <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                {result.potential_buyers.map((b, i) => (
-                  <div key={i} style={{ flex: "1 1 100px", padding: "0.85rem", background: "white", borderRadius: "8px", border: "1px solid #fde68a", fontWeight: "600", color: "#92400e", textAlign: "center", fontSize: "0.85rem", boxShadow: "0 1px 3px rgba(15,30,58,0.1)" }}>{b[0]}</div>
-                ))}
-              </div>
-            )}
-            <div style={{ gridColumn: "1 / -1" }}>
-              {sectionCard("#f0fdf4", "#d1fae5", "#059669", t("dash.estimatedProfit"),
-                <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                  <span style={{ fontSize: "1.5rem", fontWeight: "800", color: "#059669" }}>{result.profit_estimation}</span>
-                </div>
-              )}
+      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: "12px" }}>
+        <div className="aurora-panel">
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+            <div className="aurora-card-icon" style={{ background: "rgba(16,185,129,0.12)", color: "#10B981" }}>
+              <Globe size={18} />
+            </div>
+            <h3 className="aurora-section-title">Top Export Opportunity</h3>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px", marginBottom: "12px" }}>
+            <div>
+              <div style={{ fontSize: "12px", color: "#94A3B8" }}>Country</div>
+              <div style={{ fontSize: "14px", fontWeight: 600 }}>UAE</div>
+            </div>
+            <div>
+              <div style={{ fontSize: "12px", color: "#94A3B8" }}>Product</div>
+              <div style={{ fontSize: "14px", fontWeight: 600 }}>Cotton Shirts</div>
+            </div>
+            <div>
+              <div style={{ fontSize: "12px", color: "#94A3B8" }}>HS Code</div>
+              <div style={{ fontSize: "14px", fontWeight: 600 }}>6205</div>
+            </div>
+            <div>
+              <div style={{ fontSize: "12px", color: "#94A3B8" }}>Demand Growth</div>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "#10B981" }}>+22%</div>
+            </div>
+            <div>
+              <div style={{ fontSize: "12px", color: "#94A3B8" }}>Market Size</div>
+              <div style={{ fontSize: "14px", fontWeight: 600 }}>$1.3B</div>
+            </div>
+            <div>
+              <div style={{ fontSize: "12px", color: "#94A3B8" }}>Import Tariff</div>
+              <div style={{ fontSize: "14px", fontWeight: 600 }}>5%</div>
             </div>
           </div>
-        )}
-      </div>
+          <div style={{ fontSize: "12px", color: "#94A3B8", marginBottom: "6px" }}>Opportunity Score</div>
+          <div className="aurora-progress-track">
+            <div className="aurora-progress-fill" />
+          </div>
+          <div style={{ fontSize: "12px", color: "#475569", marginTop: "6px" }}>92 / 100</div>
+        </div>
 
-      {/* Impact Section ── */}
-      <div style={{ background: "#0f1e3a", borderRadius: "10px", padding: "2rem 2.5rem", color: "white", marginBottom: "2rem" }}>
-        <h2 style={{ fontSize: "1.05rem", fontWeight: "700", marginBottom: "0.35rem", color: "#d4af37" }}>{t("dash.impactTitle")}</h2>
-        <p style={{ opacity: 0.5, fontSize: "0.78rem", marginBottom: "1.75rem" }}>{t("dash.impactSubtitle")}</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "1.25rem" }}>
-          {[
-            { stat: t("dash.impactStat1"), desc: t("dash.impactDesc1") },
-            { stat: t("dash.impactStat2"), desc: t("dash.impactDesc2") },
-            { stat: t("dash.impactStat3"), desc: t("dash.impactDesc3") },
-            { stat: t("dash.impactStat4"), desc: t("dash.impactDesc4") },
-          ].map((item, i) => (
-            <div key={i} style={{ textAlign: "center", padding: "1.25rem 1rem", background: "rgba(255,255,255,0.05)", borderRadius: "8px", border: "1px solid rgba(212,175,55,0.12)" }}>
-              <div style={{ fontSize: "1.5rem", fontWeight: "800", color: "#d4af37", lineHeight: 1.1 }}>{item.stat}</div>
-              <div style={{ fontSize: "0.75rem", opacity: 0.7, marginTop: "0.4rem", lineHeight: "1.5" }}>{item.desc}</div>
+        <div style={{ display: "grid", gap: "12px" }}>
+          <div className="aurora-panel">
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+              <div className="aurora-card-icon" style={{ background: "rgba(47,107,255,0.12)", color: "#2F6BFF" }}>
+                <ShieldCheck size={18} />
+              </div>
+              <h3 className="aurora-section-title">Export Readiness</h3>
             </div>
-          ))}
+            <div style={{ fontSize: "24px", fontWeight: 700, marginBottom: "6px" }}>45 / 100</div>
+            <div style={{ fontSize: "12px", color: "#94A3B8", marginBottom: "6px" }}>Next Step</div>
+            <div style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>Upload IEC Certificate</div>
+            <div className="aurora-progress-track">
+              <div className="aurora-progress-fill" style={{ width: "45%" }} />
+            </div>
+          </div>
+
+          <div className="aurora-panel">
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+              <div className="aurora-card-icon" style={{ background: "rgba(245,166,35,0.12)", color: "#F5A623" }}>
+                <Sparkles size={18} />
+              </div>
+              <h3 className="aurora-section-title">AI Recommended Actions</h3>
+            </div>
+            <div style={{ display: "grid", gap: "8px", fontSize: "13px" }}>
+              <div>Upload IEC certificate</div>
+              <div>Verify UAE buyer credentials</div>
+              <div>Check textile certification</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Footer ── */}
-      <div style={{ background: "white", border: "1px solid #e2e8f0", padding: "1.25rem 1.5rem", borderRadius: "8px", textAlign: "center" }}>
-        <p style={{ fontSize: "0.78rem", color: "#94a3b8" }}>
-          {t("dash.footer")}
-        </p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+        <div className="aurora-panel">
+          <div className="aurora-section-title">Export Demand by Country</div>
+          <div className="aurora-chart">
+            <Bar data={barData} options={barOptions} />
+          </div>
+        </div>
+        <div className="aurora-panel">
+          <div className="aurora-section-title">Profit Simulation Breakdown</div>
+          <div className="aurora-chart">
+            <Bar
+              data={{
+                labels: ["Production", "Shipping", "Duty", "Profit"],
+                datasets: [{
+                  data: [1.2, 0.7, 0.3, 2.4],
+                  backgroundColor: ["#94A3B8", "#2F6BFF", "#F5A623", "#10B981"],
+                  borderRadius: 6,
+                }],
+              }}
+              options={barOptions}
+            />
+          </div>
+        </div>
+        <div className="aurora-panel">
+          <div className="aurora-section-title">Export Sector Mix</div>
+          <div className="aurora-chart">
+            <Doughnut data={donutData} options={donutOptions} />
+          </div>
+        </div>
       </div>
+
+      {tradeData && (
+        <div style={{ fontSize: "12px", color: "#94A3B8" }}>
+          Live feed: {tradeData.india_export_value} · {tradeData.source}
+        </div>
+      )}
     </div>
   );
 }

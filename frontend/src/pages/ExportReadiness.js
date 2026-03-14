@@ -122,6 +122,8 @@ function ExportReadiness() {
   const level      = getLevel(auditScore);
   const remaining  = CHECKS.filter(c => !checked[c.key]);
   const nextGain   = remaining.slice(0, 3).reduce((a, c) => a + c.points, 0);
+  const readinessPercent = 80;
+  const readinessNextStep = "Upload IEC";
 
   const toggleJourney = (key) => {
     setJourney(prev => ({ ...prev, [key]: !prev[key] }));
@@ -139,6 +141,35 @@ function ExportReadiness() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+
+      {/* ── Export Readiness Meter ─────────────────────────────────── */}
+      <div style={{
+        background: "white",
+        borderRadius: "12px",
+        padding: "1.5rem 1.75rem",
+        border: "1px solid #e2e8f0",
+        boxShadow: "0 4px 12px rgba(15,30,58,0.08)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.85rem" }}>
+          <div style={{ fontSize: "0.78rem", fontWeight: "800", letterSpacing: "1px", textTransform: "uppercase", color: "#0f1e3a" }}>
+            Export Readiness Meter
+          </div>
+          <div style={{ fontSize: "0.85rem", fontWeight: "800", color: "#0f1e3a" }}>{readinessPercent}%</div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+          <div style={{ flex: 1, height: "10px", borderRadius: "999px", background: "#f1f5f9", overflow: "hidden" }}>
+            <div style={{ width: `${readinessPercent}%`, height: "100%", background: "linear-gradient(90deg, #2563eb, #16a34a)", borderRadius: "999px" }} />
+          </div>
+          <div style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace", fontSize: "0.75rem", color: "#64748b" }}>
+            {"########--"}
+          </div>
+        </div>
+
+        <div style={{ marginTop: "0.85rem", fontSize: "0.82rem", color: "#475569", fontWeight: "600" }}>
+          Next Step: <span style={{ color: "#0f1e3a", fontWeight: "800" }}>{readinessNextStep}</span>
+        </div>
+      </div>
 
       {/* ── Row 1: Profile card + Next-step card ───────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
