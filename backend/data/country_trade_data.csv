@@ -1,0 +1,23 @@
+country,region,tariff_percentage,competition_level,demand_score
+UAE,Middle East,5,Low,8.6
+Saudi Arabia,Middle East,8,Medium,7.9
+Qatar,Middle East,5,Low,7.5
+Oman,Middle East,6,Medium,7.2
+Kuwait,Middle East,6,Medium,7.0
+Germany,Europe,10,High,8.2
+France,Europe,9,High,7.8
+Netherlands,Europe,7,Medium,7.9
+Italy,Europe,9,Medium,7.6
+USA,North America,7,High,9.1
+Canada,North America,6,Medium,8.0
+Mexico,North America,8,Medium,7.3
+Singapore,South East Asia,4,Low,8.7
+Malaysia,South East Asia,5,Medium,7.6
+Thailand,South East Asia,6,Medium,7.4
+Japan,Asia Pacific,6,High,8.4
+Australia,Asia Pacific,5,Low,7.8
+China,Asia Pacific,8,High,8.1
+Nigeria,Africa,9,Medium,7.2
+South Africa,Africa,8,Medium,7.0
+Brazil,South America,10,High,7.5
+Chile,South America,6,Low,7.1

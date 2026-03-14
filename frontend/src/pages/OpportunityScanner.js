@@ -50,17 +50,29 @@ function OpportunityScanner() {
     setResult(null);
 
     try {
+      const scanPayload = {
+        product: product.trim(),
+        hsCode: hsCode.trim(),
+        region,
+        productPrice: productPrice ? Number(productPrice) : null,
+        productionCost: productionCost ? Number(productionCost) : null,
+        shippingCost: shippingCost ? Number(shippingCost) : null,
+        dutyPercentage: dutyPercentage ? Number(dutyPercentage) : null,
+      };
+
+      localStorage.setItem("exportready_last_scan", JSON.stringify(scanPayload));
+
       const question = `/scan-opportunity ${product}`;
       const response = await API.post("/export-chat", null, {
         params: {
           question,
-          product,
-          hs_code: hsCode,
-          target_region: region,
-          product_price: productPrice ? Number(productPrice) : null,
-          production_cost: productionCost ? Number(productionCost) : null,
-          shipping_cost: shippingCost ? Number(shippingCost) : null,
-          duty_percentage: dutyPercentage ? Number(dutyPercentage) : null,
+          product: scanPayload.product,
+          hs_code: scanPayload.hsCode,
+          target_region: scanPayload.region,
+          product_price: scanPayload.productPrice,
+          production_cost: scanPayload.productionCost,
+          shipping_cost: scanPayload.shippingCost,
+          duty_percentage: scanPayload.dutyPercentage,
           session_id: sessionIdRef.current,
         }
       });

@@ -15,14 +15,67 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tool
 function Dashboard() {
   const navigate = useNavigate();
   const [tradeData, setTradeData] = useState(null);
+  const [opportunities, setOpportunities] = useState([]);
+  const [opportunityLoading, setOpportunityLoading] = useState(false);
   const [tooltip, setTooltip] = useState(null);
+  const [opportunityTooltip, setOpportunityTooltip] = useState(null);
+  const [lastScan, setLastScan] = useState({
+    product: "Cotton Shirts",
+    hsCode: "6205",
+    region: "Global",
+    productPrice: 12,
+    productionCost: 6,
+    shippingCost: 1.2,
+    dutyPercentage: 5,
+  });
   const mapRef = useRef(null);
+  const opportunityMapRef = useRef(null);
 
   useEffect(() => {
     API.get("/trade-volume", { params: { product_hs: "1006" } })
       .then(res => setTradeData(res.data))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("exportready_last_scan");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setLastScan(prev => ({
+          ...prev,
+          ...parsed,
+          product: parsed.product || prev.product,
+          hsCode: parsed.hsCode || prev.hsCode,
+          region: parsed.region || prev.region,
+        }));
+      }
+    } catch {
+      // Ignore invalid stored data.
+    }
+  }, []);
+
+  useEffect(() => {
+    setOpportunityLoading(true);
+    API.post("/export-chat", null, {
+      params: {
+        question: `/scan-opportunity ${lastScan.product}`,
+        product: lastScan.product,
+        hs_code: lastScan.hsCode,
+        target_region: lastScan.region,
+        product_price: lastScan.productPrice,
+        production_cost: lastScan.productionCost,
+        shipping_cost: lastScan.shippingCost,
+        duty_percentage: lastScan.dutyPercentage,
+      }
+    })
+      .then(res => {
+        const data = res.data?.cards?.market_opportunities || [];
+        setOpportunities(data.slice(0, 6));
+      })
+      .catch(() => {})
+      .finally(() => setOpportunityLoading(false));
+  }, [lastScan.product, lastScan.hsCode, lastScan.region, lastScan.productPrice, lastScan.productionCost, lastScan.shippingCost, lastScan.dutyPercentage]);
 
   const insightCards = [
     { label: "Products Listed", value: "3", accent: "#2F6BFF" },
@@ -70,6 +123,44 @@ function Dashboard() {
     if (!tooltip || !mapRef.current) return;
     const bounds = mapRef.current.getBoundingClientRect();
     setTooltip(prev => ({
+      ...prev,
+      x: event.clientX - bounds.left + 12,
+      y: event.clientY - bounds.top + 12,
+    }));
+  };
+
+  const normalizeCountryName = (name) => {
+    const map = {
+      USA: "United States of America",
+      UK: "United Kingdom",
+      UAE: "United Arab Emirates",
+      "South Korea": "Korea, Republic of",
+      "North Korea": "Korea, Democratic People's Republic of",
+    };
+    return map[name] || name;
+  };
+
+  const getOpportunityColor = (score) => {
+    if (score >= 8.5) return "#1a9850";
+    if (score >= 7.2) return "#91cf60";
+    if (score >= 6) return "#d9f0a3";
+    return "#e2e8f0";
+  };
+
+  const handleOpportunityEnter = (event, content) => {
+    const bounds = opportunityMapRef.current?.getBoundingClientRect();
+    if (!bounds) return;
+    setOpportunityTooltip({
+      x: event.clientX - bounds.left + 12,
+      y: event.clientY - bounds.top + 12,
+      content,
+    });
+  };
+
+  const handleOpportunityMove = (event) => {
+    if (!opportunityTooltip || !opportunityMapRef.current) return;
+    const bounds = opportunityMapRef.current.getBoundingClientRect();
+    setOpportunityTooltip(prev => ({
       ...prev,
       x: event.clientX - bounds.left + 12,
       y: event.clientY - bounds.top + 12,
@@ -191,6 +282,127 @@ function Dashboard() {
               <circle r={5} fill="#F5A623" />
             </Marker>
           </ComposableMap>
+        </div>
+      </div>
+
+      <div className="aurora-panel" style={{ position: "relative" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div className="aurora-card-icon" style={{ background: "rgba(16,185,129,0.12)", color: "#10B981" }}>
+              <Globe size={18} />
+            </div>
+            <h3 className="aurora-section-title">Export Opportunities (AI Market Intelligence)</h3>
+          </div>
+          <div style={{ fontSize: "12px", color: "#94A3B8" }}>
+            {opportunityLoading ? "Loading insights..." : "Updated just now"}
+          </div>
+        </div>
+
+        <div
+          ref={opportunityMapRef}
+          onMouseMove={handleOpportunityMove}
+          style={{ background: "#f8fafc", borderRadius: "12px", border: "1px solid #e2e8f0", padding: "0.75rem" }}
+        >
+          {tooltip && (
+            <div className="aurora-tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
+              {tooltip.content.split("\n").map((line, index) => (
+                <div key={index}>{line}</div>
+              ))}
+            </div>
+          )}
+          <ComposableMap projectionConfig={{ scale: 140 }}>
+            <Geographies geography="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json">
+              {({ geographies }) =>
+                geographies.map(geo => {
+                  const match = opportunities.find((item) =>
+                    normalizeCountryName(item.country) === geo.properties.NAME
+                  );
+                  const score = match?.opportunity_score ?? 0;
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill={match ? getOpportunityColor(score) : "#e2e8f0"}
+                      stroke="#E3E9F3"
+                      strokeWidth={0.5}
+                      onMouseEnter={(event) => {
+                        if (!match) return;
+                        const profit = match.profit_estimate?.profit_per_unit;
+                        const tooltipText = [
+                          match.country,
+                          `Opportunity Score: ${match.opportunity_score ?? "-"}`,
+                          `Tariff: ${match.tariff ?? "-"}%`,
+                          `Profit/Unit: ${profit !== undefined ? `$${profit}` : "-"}`,
+                        ].join("\n");
+                        handleOpportunityEnter(event, tooltipText);
+                      }}
+                      onMouseLeave={() => setOpportunityTooltip(null)}
+                    />
+                  );
+                })
+              }
+            </Geographies>
+          </ComposableMap>
+        </div>
+
+        <div style={{ display: "flex", gap: "12px", marginTop: "12px", fontSize: "11px", color: "#64748b" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#1a9850" }} /> High
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#91cf60" }} /> Medium
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#d9f0a3" }} /> Emerging
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#e2e8f0" }} /> Low
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px", marginTop: "16px" }}>
+          {(opportunities.length > 0 ? opportunities.slice(0, 4) : []).map((item) => (
+            <div key={item.country} style={{ border: "1px solid #e2e8f0", borderRadius: "12px", padding: "0.9rem", background: "white" }}>
+              <div style={{ fontSize: "13px", fontWeight: 700, color: "#0f1e3a", marginBottom: "6px" }}>
+                {item.country}
+              </div>
+              <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "4px" }}>Opportunity Score</div>
+              <div style={{ fontSize: "14px", fontWeight: 700, color: "#0f1e3a" }}>{item.opportunity_score ?? "-"}</div>
+              <div style={{ fontSize: "12px", color: "#64748b", marginTop: "6px" }}>Tariff</div>
+              <div style={{ fontSize: "13px", fontWeight: 600 }}>{item.tariff ?? "-"}%</div>
+              <div style={{ fontSize: "12px", color: "#64748b", marginTop: "6px" }}>Estimated Profit</div>
+              <div style={{ fontSize: "13px", fontWeight: 600 }}>
+                {item.profit_estimate?.profit_per_unit !== undefined ? `$${item.profit_estimate.profit_per_unit}/unit` : "-"}
+              </div>
+              {Array.isArray(item.why_market) && item.why_market.length > 0 && (
+                <div style={{ marginTop: "8px", fontSize: "12px", color: "#475569" }}>
+                  <div style={{ fontWeight: 700, marginBottom: "4px" }}>Why this market?</div>
+                  <ul style={{ margin: 0, paddingLeft: "1rem" }}>
+                    {item.why_market.map((reason, index) => (
+                      <li key={index}>{reason}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <button
+                className="aurora-cta"
+                style={{ marginTop: "10px", width: "100%" }}
+                onClick={() => navigate("/export-plan", {
+                  state: {
+                    product: lastScan.product,
+                    hsCode: lastScan.hsCode,
+                    country: item.country,
+                    productPrice: lastScan.productPrice,
+                    productionCost: lastScan.productionCost,
+                    shippingCost: lastScan.shippingCost,
+                    dutyPercentage: lastScan.dutyPercentage,
+                  }
+                })}
+              >
+                Generate Export Plan
+              </button>
+            </div>
+          ))}
         </div>
       </div>
 
