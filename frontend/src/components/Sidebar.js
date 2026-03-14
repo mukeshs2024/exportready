@@ -9,6 +9,9 @@ import {
   ShieldCheck,
   BadgeCheck,
   BarChart3,
+  ShoppingBag,
+  ClipboardList,
+  UserPlus,
   Bot,
   Settings,
 } from "lucide-react";
@@ -35,6 +38,19 @@ function Sidebar() {
   const supportItems = [
     { path: "/chatbot", labelKey: "nav.aiAdvisor", icon: <Bot size={16} /> },
     { path: "/settings", labelKey: "nav.settings", icon: <Settings size={16} /> },
+  ];
+
+  const buyerItems = [
+    { path: "/marketplace", labelKey: "nav.marketplace", icon: <ShoppingBag size={16} /> },
+    { path: "/buyer/orders", labelKey: "nav.buyerOrders", icon: <ClipboardList size={16} /> },
+    { path: "/importer/register", labelKey: "nav.importerRegister", icon: <UserPlus size={16} /> },
+  ];
+
+  const exporterItems = [
+    { path: "/exporter/dashboard", labelKey: "nav.exporterDashboard", icon: <LayoutGrid size={16} /> },
+    { path: "/exporter/products", labelKey: "nav.exporterProducts", icon: <Package size={16} /> },
+    { path: "/exporter/orders", labelKey: "nav.exporterOrders", icon: <ClipboardList size={16} /> },
+    { path: "/exporter/register", labelKey: "nav.exporterRegister", icon: <UserPlus size={16} /> },
   ];
 
   return (
@@ -74,6 +90,28 @@ function Sidebar() {
 
         <div style={{ fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#94A3B8", padding: "0.75rem 0.85rem 0.25rem" }}>Support</div>
         {supportItems.map(item => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link key={item.path} to={item.path} className={`aurora-nav-link${isActive ? " active" : ""}`}>
+              <span style={{ display: "flex", alignItems: "center" }}>{item.icon}</span>
+              <span>{t(item.labelKey)}</span>
+            </Link>
+          );
+        })}
+
+        <div style={{ fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#94A3B8", padding: "0.75rem 0.85rem 0.25rem" }}>Buyer</div>
+        {buyerItems.map(item => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link key={item.path} to={item.path} className={`aurora-nav-link${isActive ? " active" : ""}`}>
+              <span style={{ display: "flex", alignItems: "center" }}>{item.icon}</span>
+              <span>{t(item.labelKey)}</span>
+            </Link>
+          );
+        })}
+
+        <div style={{ fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#94A3B8", padding: "0.75rem 0.85rem 0.25rem" }}>Exporter</div>
+        {exporterItems.map(item => {
           const isActive = location.pathname === item.path;
           return (
             <Link key={item.path} to={item.path} className={`aurora-nav-link${isActive ? " active" : ""}`}>

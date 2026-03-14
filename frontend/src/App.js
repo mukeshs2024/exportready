@@ -12,7 +12,6 @@ import SplashScreen from "./components/SplashScreen";
 import Onboarding from "./components/Onboarding";
 
 import Dashboard from "./pages/Dashboard";
-import ProductForm from "./pages/ProductForm";
 import MarketAnalysis from "./pages/MarketAnalysis";
 import ProfitSimulator from "./pages/ProfitSimulator";
 import ExportPlan from "./pages/ExportPlan";
@@ -25,6 +24,15 @@ import Reports from "./pages/Reports";
 import DocumentGenerator from "./pages/DocumentGenerator";
 import Profile from "./pages/Profile";
 import AccountSettings from "./pages/AccountSettings";
+import ProductDetail from "./pages/ProductDetail";
+import BuyerOrders from "./pages/BuyerOrders";
+import BuyerOrderDetail from "./pages/BuyerOrderDetail";
+import ImporterRegister from "./pages/ImporterRegister";
+import ExporterDashboard from "./pages/ExporterDashboard";
+import ExporterProducts from "./pages/ExporterProducts";
+import ExporterOrders from "./pages/ExporterOrders";
+import ExporterOrderDetail from "./pages/ExporterOrderDetail";
+import ExporterRegister from "./pages/ExporterRegister";
 
 function App() {
   const [isCollapsed] = useState(false);
@@ -98,12 +106,14 @@ function App() {
           <div className="aurora-container">
             <Routes>
               <Route path="/" element={<Dashboard />} />
-            <Route path="/product" element={<ProductForm />} />
+            <Route path="/product" element={<ExporterProducts />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/market" element={<MarketAnalysis />} />
             <Route path="/profit" element={<ProfitSimulator />} />
             <Route path="/opportunity" element={<OpportunityScanner />} />
             <Route path="/export-plan" element={<ExportPlan />} />
             <Route path="/products" element={<ProductsMarketplace />} />
+            <Route path="/marketplace" element={<ProductsMarketplace />} />
             <Route path="/compliance" element={<Compliance />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/chatbot" element={<ExportAdvisor />} />
@@ -111,6 +121,14 @@ function App() {
             <Route path="/readiness" element={<ExportReadiness />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<AccountSettings />} />
+            <Route path="/buyer/orders" element={<BuyerOrders />} />
+            <Route path="/buyer/orders/:id" element={<BuyerOrderDetail />} />
+            <Route path="/importer/register" element={<ImporterRegister />} />
+            <Route path="/exporter/dashboard" element={<ExporterDashboard />} />
+            <Route path="/exporter/products" element={<ExporterProducts />} />
+            <Route path="/exporter/orders" element={<ExporterOrders />} />
+            <Route path="/exporter/orders/:id" element={<ExporterOrderDetail />} />
+            <Route path="/exporter/register" element={<ExporterRegister />} />
             </Routes>
           </div>
         </div>
