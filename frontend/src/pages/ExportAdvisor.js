@@ -6,7 +6,33 @@ function ExportAdvisor() {
   const [userInput, setUserInput] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
   const [loading, setLoading] = useState(false);
+  const [suggestedQuestions, setSuggestedQuestions] = useState([
+    "Which countries import cotton shirts?",
+    "What documents are needed for UAE export?",
+    "Estimate profit exporting spices",
+    "How to get IEC license?",
+    "/scan-opportunity turmeric",
+  ]);
   const messagesEndRef = useRef(null);
+  const sessionIdRef = useRef("");
+
+  const getSessionId = () => {
+    try {
+      const existing = localStorage.getItem("exportready_ai_session");
+      if (existing) return existing;
+      const newId = typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `session_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      localStorage.setItem("exportready_ai_session", newId);
+      return newId;
+    } catch {
+      return `session_${Date.now()}`;
+    }
+  };
+
+  if (!sessionIdRef.current) {
+    sessionIdRef.current = getSessionId();
+  }
 
   // Auto-scroll to latest message
   const scrollToBottom = () => {
@@ -18,36 +44,42 @@ function ExportAdvisor() {
   }, [messages]);
 
   // Send message to chatbot
-  const sendMessage = async () => {
-    if (!userInput.trim()) {
+  const sendMessage = async (textOverride = "") => {
+    const messageText = (textOverride || userInput).trim();
+    if (!messageText) {
       alert("Please enter a question");
       return;
     }
 
     // Add user message to chat
-    const newMessages = [...messages, { sender: "user", text: userInput }];
+    const newMessages = [...messages, { sender: "user", text: messageText }];
     setMessages(newMessages);
     setUserInput("");
     setLoading(true);
 
     try {
-      let botReply;
+      const response = await API.post("/export-chat", null, {
+        params: {
+          question: messageText,
+          product: selectedProduct,
+          session_id: sessionIdRef.current,
+        }
+      });
 
-      if (selectedProduct.trim()) {
-        // Context-aware AI chat when a product is specified
-        const response = await API.post("/export-chat", null, {
-          params: { question: userInput, product: selectedProduct }
-        });
-        botReply = response.data.answer;
-      } else {
-        // Fallback to rule-based chatbot when no product
-        const response = await API.post("/chatbot", null, {
-          params: { query: userInput }
-        });
-        botReply = response.data.response;
+      const data = response.data || {};
+      const botMessage = {
+        sender: "bot",
+        text: data.response || "Here is a structured export advisory response.",
+        cards: data.cards || {},
+        confidence: data.confidence,
+        sources: data.sources || [],
+      };
+
+      if (Array.isArray(data.suggested_questions) && data.suggested_questions.length > 0) {
+        setSuggestedQuestions(data.suggested_questions);
       }
 
-      setMessages([...newMessages, { sender: "bot", text: botReply }]);
+      setMessages([...newMessages, botMessage]);
     } catch (err) {
       const errorMessage = err.response?.data?.detail || "Sorry, I couldn't process your question. Please try again.";
       setMessages([...newMessages, { sender: "bot", text: errorMessage }]);
@@ -70,11 +102,97 @@ function ExportAdvisor() {
     setUserInput("");
   };
 
+  const renderConfidence = (confidence) => {
+    if (typeof confidence !== "number") return null;
+    const percentage = Math.round(confidence * 100);
+    return (
+      <div style={{ marginTop: "0.65rem" }}>
+        <div style={{ fontSize: "0.75rem", color: "#64748b", marginBottom: "0.35rem" }}>
+          Answer Confidence: {percentage}%
+        </div>
+        <div style={{ height: "6px", background: "#e2e8f0", borderRadius: "999px", overflow: "hidden" }}>
+          <div style={{ width: `${percentage}%`, height: "100%", background: "#0f1e3a" }} />
+        </div>
+      </div>
+    );
+  };
+
+  const renderCards = (cards = {}) => {
+    if (!cards || Object.keys(cards).length === 0) return null;
+
+    return (
+      <div style={{ marginTop: "0.9rem", display: "grid", gap: "0.65rem" }}>
+        {cards.market_insight && (
+          <div style={{ border: "1px solid #e2e8f0", borderRadius: "10px", padding: "0.8rem", background: "#ffffff" }}>
+            <div style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 700, marginBottom: "0.25rem" }}>Market Insight</div>
+            <div style={{ fontSize: "0.9rem", color: "#0f1e3a" }}>{cards.market_insight}</div>
+          </div>
+        )}
+
+        {Array.isArray(cards.required_documents) && cards.required_documents.length > 0 && (
+          <div style={{ border: "1px solid #e2e8f0", borderRadius: "10px", padding: "0.8rem", background: "#ffffff" }}>
+            <div style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 700, marginBottom: "0.25rem" }}>Required Documents</div>
+            <ul style={{ margin: 0, paddingLeft: "1rem", color: "#0f1e3a", fontSize: "0.9rem" }}>
+              {cards.required_documents.map((doc, idx) => (
+                <li key={idx}>{doc}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {cards.profit_estimate && Object.keys(cards.profit_estimate).length > 0 && (
+          <div style={{ border: "1px solid #e2e8f0", borderRadius: "10px", padding: "0.8rem", background: "#ffffff" }}>
+            <div style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 700, marginBottom: "0.25rem" }}>Profit Estimate</div>
+            <div style={{ fontSize: "0.9rem", color: "#0f1e3a" }}>
+              {cards.profit_estimate.estimated_margin && (
+                <div>Estimated margin: {cards.profit_estimate.estimated_margin}</div>
+              )}
+              {cards.profit_estimate.shipping_cost && (
+                <div>Shipping cost: {cards.profit_estimate.shipping_cost}</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {Array.isArray(cards.next_steps) && cards.next_steps.length > 0 && (
+          <div style={{ border: "1px solid #e2e8f0", borderRadius: "10px", padding: "0.8rem", background: "#ffffff" }}>
+            <div style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 700, marginBottom: "0.25rem" }}>Next Steps</div>
+            <ol style={{ margin: 0, paddingLeft: "1.1rem", color: "#0f1e3a", fontSize: "0.9rem" }}>
+              {cards.next_steps.map((step, idx) => (
+                <li key={idx}>{step}</li>
+              ))}
+            </ol>
+          </div>
+        )}
+
+        {Array.isArray(cards.market_opportunities) && cards.market_opportunities.length > 0 && (
+          <div style={{ border: "1px solid #e2e8f0", borderRadius: "10px", padding: "0.8rem", background: "#ffffff" }}>
+            <div style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 700, marginBottom: "0.25rem" }}>Market Opportunities</div>
+            <div style={{ display: "grid", gap: "0.35rem", fontSize: "0.9rem", color: "#0f1e3a" }}>
+              {cards.market_opportunities.map((item) => (
+                <div key={`${item.rank}-${item.country}`}>
+                  {item.rank}. {item.country}{item.demand_score ? ` (Demand Score: ${item.demand_score})` : ""}
+                  {item.market_size ? `, Import Value: ${item.market_size}` : ""}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {cards.safety_notice && (
+          <div style={{ border: "1px solid #fecaca", borderRadius: "10px", padding: "0.8rem", background: "#fef2f2", color: "#b91c1c", fontSize: "0.85rem" }}>
+            {cards.safety_notice}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div style={{ background: "white", padding: "2.5rem", borderRadius: "12px", boxShadow: "0 4px 12px rgba(15, 30, 58, 0.12)", border: "1px solid #e2e8f0", display: "flex", flexDirection: "column", height: "calc(100vh - 200px)", maxWidth: "900px" }}>
       <div style={{ marginBottom: "1.5rem", paddingBottom: "1.5rem", borderBottom: "2px solid #e2e8f0" }}>
         <h2 style={{ color: "#0f1e3a", fontSize: "1.8rem", fontWeight: "800", margin: "0 0 0.5rem 0" }}>
-          <span style={{ marginRight: "0.75rem" }}>💬</span>AI Export Advisor
+          AI Export Advisor
         </h2>
         <p style={{ color: "#64748b", fontSize: "0.95rem", margin: "0 0 1rem 0" }}>
           Ask me anything about export processes, documents, markets, and more!
@@ -126,7 +244,7 @@ function ExportAdvisor() {
             <p style={{ fontSize: "1.1rem", fontWeight: "500" }}>Hello! I am the ExportReady AI Advisor.</p>
             {selectedProduct.trim() ? (
               <p style={{ fontSize: "0.9rem", lineHeight: "1.8", color: "#7c3aed" }}>
-                🤖 AI Mode active for: <strong>{selectedProduct}</strong><br />
+                AI Mode active for: <strong>{selectedProduct}</strong><br />
                 I'll give product-specific advice on markets, tariffs, timing &amp; compliance.
               </p>
             ) : (
@@ -137,7 +255,7 @@ function ExportAdvisor() {
                 • Export markets<br />
                 • Platform features<br />
                 <span style={{ color: "#7c3aed", fontWeight: "600" }}>
-                  💡 Enter your product above to unlock AI-powered advice
+                  Enter your product above to unlock AI-powered advice
                 </span>
               </p>
             )}
@@ -168,6 +286,8 @@ function ExportAdvisor() {
               {typeof msg.text === "string"
                 ? msg.text
                 : JSON.stringify(msg.text)}
+              {msg.sender === "bot" && renderConfidence(msg.confidence)}
+              {msg.sender === "bot" && renderCards(msg.cards)}
             </div>
           </div>
         ))}
@@ -290,6 +410,40 @@ function ExportAdvisor() {
         >
           Clear
         </button>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+        <div style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: 700, letterSpacing: "0.3px" }}>
+          Try asking
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+          {suggestedQuestions.map((q, idx) => (
+            <button
+              key={`${q}-${idx}`}
+              onClick={() => sendMessage(q)}
+              style={{
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "999px",
+                padding: "0.45rem 0.85rem",
+                fontSize: "0.8rem",
+                color: "#0f1e3a",
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "#cbd5e1";
+                e.currentTarget.style.background = "#ffffff";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "#e2e8f0";
+                e.currentTarget.style.background = "#f8fafc";
+              }}
+            >
+              {q}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Helper Text */}

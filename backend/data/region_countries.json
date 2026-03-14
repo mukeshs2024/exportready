@@ -1,0 +1,55 @@
+{
+  "global": [],
+  "middle east": [
+    "UAE",
+    "Saudi Arabia",
+    "Qatar",
+    "Oman",
+    "Kuwait",
+    "Bahrain",
+    "Jordan"
+  ],
+  "europe": [
+    "Germany",
+    "France",
+    "Italy",
+    "Netherlands",
+    "Spain",
+    "Poland",
+    "UK"
+  ],
+  "north america": [
+    "USA",
+    "Canada",
+    "Mexico"
+  ],
+  "south east asia": [
+    "Singapore",
+    "Malaysia",
+    "Thailand",
+    "Indonesia",
+    "Vietnam",
+    "Philippines"
+  ],
+  "asia pacific": [
+    "Japan",
+    "South Korea",
+    "Australia",
+    "China",
+    "New Zealand"
+  ],
+  "africa": [
+    "Nigeria",
+    "South Africa",
+    "Kenya",
+    "Egypt",
+    "Ghana"
+  ],
+  "south america": [
+    "Brazil",
+    "Argentina",
+    "Chile",
+    "Peru",
+    "Colombia"
+  ]
+}

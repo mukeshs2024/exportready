@@ -88,6 +88,17 @@ CREATE TABLE market_data (
 );
 
 
+-- 5.1 Country Trade Data Table (Tariff & Competition)
+
+CREATE TABLE country_trade_data (
+    country TEXT PRIMARY KEY,
+    region TEXT,
+    tariff_percentage FLOAT,
+    competition_level TEXT,
+    demand_score FLOAT
+);
+
+
 -- 6️⃣ Profit Simulation Table
 
 CREATE TABLE profit_results (
@@ -111,5 +122,16 @@ CREATE TABLE export_reports (
     compliance_checklist TEXT,
     estimated_profit NUMERIC,
     roadmap TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- 8) Chat History Table (AI Memory)
+
+CREATE TABLE chat_history (
+    id SERIAL PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

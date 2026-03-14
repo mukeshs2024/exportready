@@ -21,6 +21,7 @@ function Sidebar() {
     { path: "/", labelKey: "nav.dashboard", icon: <LayoutGrid size={16} /> },
     { path: "/product", labelKey: "nav.addProduct", icon: <Package size={16} /> },
     { path: "/market", labelKey: "nav.marketAnalysis", icon: <Globe2 size={16} /> },
+    { path: "/opportunity", labelKey: "nav.opportunityScanner", icon: <BarChart3 size={16} /> },
     { path: "/profit", labelKey: "nav.profitSimulator", icon: <TrendingUp size={16} /> },
     { path: "/docs", labelKey: "nav.documents", icon: <FileText size={16} /> },
   ];

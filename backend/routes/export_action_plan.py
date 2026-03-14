@@ -62,7 +62,7 @@ def _resolve_category(product: str) -> str:
 
 
 @router.get("/export-action-plan")
-def export_action_plan(product: str):
+def export_action_plan(product: str, hs_code: str = "", country: str = ""):
 
     # --- 1. Resolve product category ---
     category = _resolve_category(product)
@@ -117,4 +117,6 @@ def export_action_plan(product: str):
         "recommended_markets": markets,
         "required_documents": documents,
         "export_steps": export_steps,
+        "hs_code": hs_code,
+        "country": country,
     }

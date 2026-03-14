@@ -17,6 +17,7 @@ import MarketAnalysis from "./pages/MarketAnalysis";
 import ProfitSimulator from "./pages/ProfitSimulator";
 import ExportPlan from "./pages/ExportPlan";
 import ExportAdvisor from "./pages/ExportAdvisor";
+import OpportunityScanner from "./pages/OpportunityScanner";
 import ExportReadiness from "./pages/ExportReadiness";
 import ProductsMarketplace from "./pages/ProductsMarketplace";
 import Compliance from "./pages/Compliance";
@@ -100,6 +101,7 @@ function App() {
             <Route path="/product" element={<ProductForm />} />
             <Route path="/market" element={<MarketAnalysis />} />
             <Route path="/profit" element={<ProfitSimulator />} />
+            <Route path="/opportunity" element={<OpportunityScanner />} />
             <Route path="/export-plan" element={<ExportPlan />} />
             <Route path="/products" element={<ProductsMarketplace />} />
             <Route path="/compliance" element={<Compliance />} />
