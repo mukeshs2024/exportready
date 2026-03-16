@@ -11,6 +11,8 @@ from routes.ai_intelligence import router as ai_router
 from routes.trade_data import router as trade_router
 from routes.compliance_check import router as compliance_router
 from routes.orders import router as orders_router
+from routes.export_documents import router as export_docs_router
+from routes.export_reports import router as export_reports_router
 from ai.chatbot import export_chatbot
 
 app = FastAPI()
@@ -53,7 +55,8 @@ app.include_router(status_router)
 app.include_router(ai_router)
 app.include_router(trade_router)
 app.include_router(compliance_router)
-app.include_router(orders_router)
+app.include_router(export_docs_router)
+app.include_router(export_reports_router)
 
 
 @app.get("/")

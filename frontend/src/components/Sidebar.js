@@ -31,6 +31,7 @@ function Sidebar() {
 
   const complianceItems = [
     { path: "/compliance", labelKey: "nav.compliance", icon: <ShieldCheck size={16} /> },
+    { path: "/export-documents", label: "Export Documents", icon: <FileText size={16} /> },
     { path: "/readiness", labelKey: "nav.readinessScore", icon: <BadgeCheck size={16} /> },
     { path: "/reports", labelKey: "nav.reports", icon: <BarChart3 size={16} /> },
   ];
@@ -83,7 +84,7 @@ function Sidebar() {
           return (
             <Link key={item.path} to={item.path} className={`aurora-nav-link${isActive ? " active" : ""}`}>
               <span style={{ display: "flex", alignItems: "center" }}>{item.icon}</span>
-              <span>{t(item.labelKey)}</span>
+              <span>{item.label || t(item.labelKey)}</span>
             </Link>
           );
         })}

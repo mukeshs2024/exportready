@@ -36,6 +36,7 @@ import ExporterProducts from "./pages/ExporterProducts";
 import ExporterOrders from "./pages/ExporterOrders";
 import ExporterOrderDetail from "./pages/ExporterOrderDetail";
 import ExporterRegister from "./pages/ExporterRegister";
+import ExportDocuments from "./pages/ExportDocuments";
 
 function App() {
   const [isCollapsed] = useState(false);
@@ -111,6 +112,7 @@ function App() {
                       <Route path="/reports" element={<Reports />} />
                       <Route path="/chatbot" element={<ExportAdvisor />} />
                       <Route path="/docs" element={<DocumentGenerator />} />
+                      <Route path="/export-documents" element={<ExportDocuments />} />
                       <Route path="/readiness" element={<ExportReadiness />} />
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/settings" element={<AccountSettings />} />

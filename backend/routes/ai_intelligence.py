@@ -7,6 +7,9 @@ import os
 import json
 import re
 import requests
+import sys
+import os as _os
+sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), ".."))
 from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -14,6 +17,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from database.connection import supabase
 from ai.market_analysis import calculate_profit, get_recommended_markets
+from export_score_engine import enrich_markets
 
 load_dotenv()
 
@@ -668,8 +672,88 @@ def opportunity_scanner(product_name: str):
 
 @router.get("/ai/market-analysis")
 def market_analysis(product_name: str):
-    data = supabase.table("market_data").select("*").eq("product_name", product_name).execute()
-    return data.data or []
+    data = (
+        supabase.table("market_data")
+        .select("*")
+        .ilike("product_name", f"%{product_name}%")
+        .execute()
+    )
+    if not data.data:
+        return {"status": "no_data"}
+    return {"status": "success", "data": data.data}
+
+
+@router.post("/market-analysis-ai")
+def market_analysis_ai(product: str):
+    """
+    AI-driven market intelligence cards for a product.
+    1. Tries Claude to generate rich per-country market cards.
+    2. Falls back to rule-based market_engine + static enrichment.
+    Either way, every market card is enriched with export_score,
+    growth_score and competition_score via the score engine.
+    """
+    prompt = f"""You are a global trade analyst. Return market intelligence for exporting {product!r} from India.
+
+Return ONLY a valid JSON object in this exact format (no markdown, no explanation):
+{{
+  "product": "{product}",
+  "markets": [
+    {{
+      "country": "UAE",
+      "demand_index": 88,
+      "import_volume": "$4.2B annually",
+      "tariff": "5%",
+      "best_route": "Mumbai → Jebel Ali (sea)",
+      "buyers": ["Al Futtaim Group", "Lulu Hypermarket"]
+    }}
+  ]
+}}
+
+Include the top 4 most promising import markets. Use realistic figures."""
+
+    # --- Try Claude first ---
+    try:
+        raw = _call_claude(prompt, max_tokens=900)
+        payload = _extract_json(raw, array=False)
+        markets = payload.get("markets", [])
+        if markets:
+            enriched = enrich_markets(markets)
+            return {"product": product, "markets": enriched}
+    except Exception:
+        pass
+
+    # --- Try OpenAI ---
+    if _OPENAI_CLIENT:
+        try:
+            resp = _OPENAI_CLIENT.chat.completions.create(
+                model="gpt-4.1-mini",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=900,
+            )
+            raw = (resp.choices[0].message.content or "").strip()
+            payload = _extract_json(raw, array=False)
+            markets = payload.get("markets", [])
+            if markets:
+                enriched = enrich_markets(markets)
+                return {"product": product, "markets": enriched}
+        except Exception:
+            pass
+
+    # --- Rule-based fallback ---
+    engine = market_engine(product)
+    base_markets = [
+        {
+            "country": m.get("country", "Unknown"),
+            "demand_index": int((m.get("demand_score") or 7.5) * 10),
+            "import_volume": m.get("market_size") or "N/A",
+            "tariff": "~5%",
+            "best_route": "Sea freight via Mumbai",
+            "buyers": [],
+        }
+        for m in engine.get("markets", [])
+    ]
+    enriched = enrich_markets(base_markets)
+    return {"product": product, "markets": enriched}
 
 
 @router.get("/ai/demand-heatmap")
