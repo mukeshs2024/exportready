@@ -26,7 +26,7 @@ function ProductsMarketplace() {
       params.page = page;
       params.page_size = pageSize;
 
-      const response = await API.get("/search-products", { params });
+      const response = await API.get("/marketplace", { params });
       const payload = response.data || {};
       const items = Array.isArray(payload) ? payload : payload.items || [];
       setProducts(items);

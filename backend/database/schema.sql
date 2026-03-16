@@ -69,7 +69,7 @@ CREATE TABLE trade_requests (
 
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
-    product_id INTEGER REFERENCES products_marketplace(id),
+    product_id INTEGER REFERENCES products(id),
     buyer_id INTEGER REFERENCES users(id),
     seller_id INTEGER REFERENCES users(id),
     quantity INTEGER NOT NULL,

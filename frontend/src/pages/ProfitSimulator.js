@@ -3,10 +3,10 @@ import API from "../services/api";
 
 function ProfitSimulator() {
 
-  const [productPrice, setProductPrice] = useState("");
+  const [productId, setProductId] = useState("");
+  const [country, setCountry] = useState("");
   const [productionCost, setProductionCost] = useState("");
   const [shippingCost, setShippingCost] = useState("");
-  const [dutyPercentage, setDutyPercentage] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,7 +19,7 @@ function ProfitSimulator() {
   };
 
   const calculateProfit = async () => {
-    if (!productPrice.trim() || !productionCost.trim() || !shippingCost.trim() || !dutyPercentage.trim()) {
+    if (!productId.trim() || !country.trim() || !productionCost.trim() || !shippingCost.trim()) {
       alert("Please fill in all fields");
       return;
     }
@@ -28,12 +28,12 @@ function ProfitSimulator() {
     setResult(null);
     setLoading(true);
     try {
-      const res = await API.post("/profit-simulation", null, {
+      const res = await API.post("/ai/profit-simulator", null, {
         params: {
-          product_price: Number(productPrice),
+          product_id: Number(productId),
+          country: country.trim(),
           production_cost: Number(productionCost),
-          shipping_cost: Number(shippingCost),
-          duty_percentage: Number(dutyPercentage)
+          shipping_cost: Number(shippingCost)
         }
       });
       setResult(res.data);
@@ -87,13 +87,40 @@ function ProfitSimulator() {
       <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem"}}>
         <div>
           <label style={{display: "block", fontWeight: "600", color: "#1a202c", marginBottom: "0.5rem", fontSize: "0.8rem"}}>
-            Product Price ($)
+            Product ID
           </label>
           <input
-            placeholder="Selling price"
+            placeholder="e.g., 1"
             type="number"
-            value={productPrice}
-            onChange={(e) => setProductPrice(e.target.value)}
+            value={productId}
+            onChange={(e) => setProductId(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "0.875rem 1rem",
+              border: "1.5px solid #e2e8f0",
+              borderRadius: "8px",
+              fontSize: "1rem",
+              fontFamily: "inherit",
+              transition: "all 0.2s ease"
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = "#0f1e3a";
+              e.target.style.boxShadow = "0 0 0 3px rgba(15, 30, 58, 0.1)";
+            }}
+            onBlur={(e) => {
+              e.target.style.boxShadow = "none";
+            }}
+          />
+        </div>
+
+        <div>
+          <label style={{display: "block", fontWeight: "600", color: "#1a202c", marginBottom: "0.5rem", fontSize: "0.95rem"}}>
+            Destination Country
+          </label>
+          <input
+            placeholder="e.g., UAE"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
             style={{
               width: "100%",
               padding: "0.875rem 1rem",
@@ -168,34 +195,6 @@ function ProfitSimulator() {
             }}
           />
         </div>
-
-        <div>
-          <label style={{display: "block", fontWeight: "600", color: "#1a202c", marginBottom: "0.5rem", fontSize: "0.95rem"}}>
-            Duty Percentage (%)
-          </label>
-          <input
-            placeholder="Duty %"
-            type="number"
-            value={dutyPercentage}
-            onChange={(e) => setDutyPercentage(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "0.875rem 1rem",
-              border: "1.5px solid #e2e8f0",
-              borderRadius: "8px",
-              fontSize: "1rem",
-              fontFamily: "inherit",
-              transition: "all 0.2s ease"
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = "#0f1e3a";
-              e.target.style.boxShadow = "0 0 0 3px rgba(15, 30, 58, 0.1)";
-            }}
-            onBlur={(e) => {
-              e.target.style.boxShadow = "none";
-            }}
-          />
-        </div>
       </div>
 
       <button onClick={calculateProfit} disabled={loading} style={{
@@ -231,29 +230,38 @@ function ProfitSimulator() {
 
       {result && (
         <div style={{marginTop:"2.5rem"}}>
+          {(() => {
+            const totalCost = (result.production_cost || 0) + (result.shipping_cost || 0) + (result.duties || 0);
+            const profitable = (result.estimated_profit || 0) > 0;
+
+            return (
+              <>
           <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "1.25rem",marginBottom:"1.5rem"}}>
             <div style={{padding:"1.5rem",background:"#f0fdf4",borderRadius:"8px",border:"1px solid #d1fae5",textAlign:"center"}}>
               <div style={{fontSize:"0.85rem",color:"#166534",fontWeight:"600",marginBottom:"0.5rem"}}>DUTY COST</div>
-              <div style={{fontSize:"1.4rem",fontWeight:"800",color:"#16a34a"}}>${result.duty_cost.toFixed(2)}</div>
+              <div style={{fontSize:"1.4rem",fontWeight:"800",color:"#16a34a"}}>${Number(result.duties || 0).toFixed(2)}</div>
             </div>
             <div style={{padding:"1.5rem",background:"#dbeafe",borderRadius:"8px",border:"1px solid #bfdbfe",textAlign:"center"}}>
               <div style={{fontSize:"0.85rem",color:"#0c4a6e",fontWeight:"600",marginBottom:"0.5rem"}}>TOTAL COST</div>
-              <div style={{fontSize:"1.4rem",fontWeight:"800",color:"#0369a1"}}>${result.total_cost.toFixed(2)}</div>
+              <div style={{fontSize:"1.4rem",fontWeight:"800",color:"#0369a1"}}>${Number(totalCost).toFixed(2)}</div>
             </div>
             <div style={{padding:"1.5rem",background:"#fef3c7",borderRadius:"8px",border:"1px solid #fde68a",textAlign:"center"}}>
               <div style={{fontSize:"0.85rem",color:"#92400e",fontWeight:"600",marginBottom:"0.5rem"}}>PROFIT</div>
-              <div style={{fontSize:"1.4rem",fontWeight:"800",color:"#d4af37"}}>${result.profit.toFixed(2)}</div>
+              <div style={{fontSize:"1.4rem",fontWeight:"800",color:"#d4af37"}}>${Number(result.estimated_profit || 0).toFixed(2)}</div>
             </div>
           </div>
 
-          <div style={{padding:"1.5rem",background:result.profitability === "Profitable" ? "#f0fdf4" : "#fef2f2",borderRadius:"8px",border:`1px solid ${result.profitability === "Profitable" ? "#d1fae5" : "#fecaca"}`,borderLeft:`4px solid ${result.profitability === "Profitable" ? "#16a34a" : "#dc2626"}`}}>
+          <div style={{padding:"1.5rem",background:profitable ? "#f0fdf4" : "#fef2f2",borderRadius:"8px",border:`1px solid ${profitable ? "#d1fae5" : "#fecaca"}`,borderLeft:`4px solid ${profitable ? "#16a34a" : "#dc2626"}`}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontSize:"0.9rem",fontWeight:"600",color:result.profitability === "Profitable" ? "#166534" : "#7f1d1d"}}>PROFITABILITY STATUS</span>
-              <span style={{fontSize:"1.3rem",fontWeight:"800",color:result.profitability === "Profitable" ? "#16a34a" : "#dc2626"}}>
-                {result.profitability === "Profitable" ? "✓ PROFITABLE" : "⚠ NOT PROFITABLE"}
+              <span style={{fontSize:"0.9rem",fontWeight:"600",color:profitable ? "#166534" : "#7f1d1d"}}>PROFITABILITY STATUS</span>
+              <span style={{fontSize:"1.3rem",fontWeight:"800",color:profitable ? "#16a34a" : "#dc2626"}}>
+                {profitable ? "PROFITABLE" : "NOT PROFITABLE"}
               </span>
             </div>
           </div>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>

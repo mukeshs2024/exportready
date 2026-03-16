@@ -29,21 +29,15 @@ function ImporterRegister() {
 
     setLoading(true);
     try {
-      const response = await API.post("/register-importer", null, {
-        params: {
-          name: form.name.trim(),
-          company_name: form.company.trim(),
-          country: form.country.trim(),
-          email: form.email.trim(),
-          phone: form.phone.trim(),
-          password: form.password
-        }
+      await API.post("/auth/signup", {
+        name: form.name.trim(),
+        company_name: form.company.trim(),
+        country: form.country.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        password: form.password,
+        role: "importer"
       });
-
-      const created = response.data?.data?.[0];
-      if (created?.id) {
-        localStorage.setItem("buyer_id", String(created.id));
-      }
       setSuccess("Importer account created. You can now place orders.");
       setForm({ name: "", company: "", country: "", email: "", phone: "", password: "" });
     } catch (err) {

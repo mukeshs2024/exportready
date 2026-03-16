@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
@@ -13,26 +13,7 @@ function OpportunityScanner() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const sessionIdRef = useRef("");
   const navigate = useNavigate();
-
-  const getSessionId = () => {
-    try {
-      const existing = localStorage.getItem("exportready_ai_session");
-      if (existing) return existing;
-      const newId = typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `session_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-      localStorage.setItem("exportready_ai_session", newId);
-      return newId;
-    } catch {
-      return `session_${Date.now()}`;
-    }
-  };
-
-  if (!sessionIdRef.current) {
-    sessionIdRef.current = getSessionId();
-  }
 
   const formatScore = (value) => {
     if (value === null || value === undefined) return "-";
@@ -62,21 +43,12 @@ function OpportunityScanner() {
 
       localStorage.setItem("exportready_last_scan", JSON.stringify(scanPayload));
 
-      const question = `/scan-opportunity ${product}`;
-      const response = await API.post("/export-chat", null, {
+      const response = await API.get("/ai/opportunity-scanner", {
         params: {
-          question,
-          product: scanPayload.product,
-          hs_code: scanPayload.hsCode,
-          target_region: scanPayload.region,
-          product_price: scanPayload.productPrice,
-          production_cost: scanPayload.productionCost,
-          shipping_cost: scanPayload.shippingCost,
-          duty_percentage: scanPayload.dutyPercentage,
-          session_id: sessionIdRef.current,
+          product_name: scanPayload.product
         }
       });
-      setResult(response.data || null);
+      setResult(response.data || []);
     } catch (err) {
       setError(err.response?.data?.detail || "Opportunity scan failed. Please try again.");
     } finally {
@@ -84,7 +56,11 @@ function OpportunityScanner() {
     }
   };
 
-  const opportunities = result?.cards?.market_opportunities || [];
+  const opportunities = Array.isArray(result?.analysis)
+    ? result.analysis
+    : (Array.isArray(result) ? result : []);
+  const topMarket = result && !Array.isArray(result) ? result.top_market : null;
+  const aiExplanation = result && !Array.isArray(result) ? result.ai_explanation : "";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
@@ -300,6 +276,28 @@ function OpportunityScanner() {
               Top Export Opportunities
             </div>
 
+            {topMarket && (
+              <div style={{
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "10px",
+                padding: "0.9rem",
+                marginBottom: "1rem",
+              }}>
+                <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.18em", color: "#64748b", fontWeight: 700 }}>
+                  Top Market
+                </div>
+                <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#0f1e3a", marginTop: "0.35rem" }}>
+                  {topMarket}
+                </div>
+                {aiExplanation && (
+                  <div style={{ marginTop: "0.5rem", color: "#0f1e3a", fontSize: "0.85rem", lineHeight: 1.6 }}>
+                    {aiExplanation}
+                  </div>
+                )}
+              </div>
+            )}
+
             {error && (
               <div style={{ background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca", padding: "0.75rem", borderRadius: "8px", marginBottom: "1rem" }}>
                 {error}
@@ -312,33 +310,23 @@ function OpportunityScanner() {
                   <tr style={{ textAlign: "left", color: "#64748b" }}>
                     <th style={{ padding: "0.5rem", borderBottom: "1px solid #e2e8f0" }}>Country</th>
                     <th style={{ padding: "0.5rem", borderBottom: "1px solid #e2e8f0" }}>Demand Score</th>
-                    <th style={{ padding: "0.5rem", borderBottom: "1px solid #e2e8f0" }}>Import Value</th>
                     <th style={{ padding: "0.5rem", borderBottom: "1px solid #e2e8f0" }}>Competition</th>
                     <th style={{ padding: "0.5rem", borderBottom: "1px solid #e2e8f0" }}>Tariff</th>
-                    <th style={{ padding: "0.5rem", borderBottom: "1px solid #e2e8f0" }}>Profit / Unit</th>
-                    <th style={{ padding: "0.5rem", borderBottom: "1px solid #e2e8f0" }}>Margin</th>
                     <th style={{ padding: "0.5rem", borderBottom: "1px solid #e2e8f0" }}>Opportunity Score</th>
-                    <th style={{ padding: "0.5rem", borderBottom: "1px solid #e2e8f0" }}>AI Confidence</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(opportunities.length > 0 ? opportunities : [
-                    { country: "USA", demand_score: 9.2, market_size: "$2.4B", rank: 1, ai_confidence: 0.92, tariff: 7, competition: "High", opportunity_score: 7.9, profit_estimate: { profit_per_unit: 4.2, profit_margin: 35 } },
-                    { country: "UAE", demand_score: 8.6, market_size: "$1.1B", rank: 2, ai_confidence: 0.88, tariff: 5, competition: "Low", opportunity_score: 8.1, profit_estimate: { profit_per_unit: 4.2, profit_margin: 35 } },
-                    { country: "Germany", demand_score: 7.9, market_size: "$900M", rank: 3, ai_confidence: 0.82, tariff: 10, competition: "High", opportunity_score: 6.4, profit_estimate: { profit_per_unit: 2.9, profit_margin: 24 } },
+                    { country: "UAE", demand_score: 9, tariff: 5, competition: "Medium", opportunity_score: 4 },
+                    { country: "USA", demand_score: 8, tariff: 8, competition: "High", opportunity_score: 0 },
+                    { country: "Germany", demand_score: 7, tariff: 10, competition: "High", opportunity_score: -3 },
                   ]).map((row, idx) => (
                     <tr key={`${row.country}-${idx}`} style={{ color: "#0f1e3a" }}>
                       <td style={{ padding: "0.6rem 0.5rem", borderBottom: "1px solid #f1f5f9" }}>{row.country}</td>
                       <td style={{ padding: "0.6rem 0.5rem", borderBottom: "1px solid #f1f5f9" }}>{formatScore(row.demand_score)}</td>
-                      <td style={{ padding: "0.6rem 0.5rem", borderBottom: "1px solid #f1f5f9" }}>{row.market_size || "-"}</td>
                       <td style={{ padding: "0.6rem 0.5rem", borderBottom: "1px solid #f1f5f9" }}>{row.competition || "Medium"}</td>
                       <td style={{ padding: "0.6rem 0.5rem", borderBottom: "1px solid #f1f5f9" }}>{row.tariff !== undefined ? `${row.tariff}%` : "-"}</td>
-                      <td style={{ padding: "0.6rem 0.5rem", borderBottom: "1px solid #f1f5f9" }}>{row.profit_estimate?.profit_per_unit !== undefined ? `$${row.profit_estimate.profit_per_unit}` : "-"}</td>
-                      <td style={{ padding: "0.6rem 0.5rem", borderBottom: "1px solid #f1f5f9" }}>{row.profit_estimate?.profit_margin !== undefined ? `${row.profit_estimate.profit_margin}%` : "-"}</td>
                       <td style={{ padding: "0.6rem 0.5rem", borderBottom: "1px solid #f1f5f9" }}>{row.opportunity_score !== undefined ? row.opportunity_score : "-"}</td>
-                      <td style={{ padding: "0.6rem 0.5rem", borderBottom: "1px solid #f1f5f9" }}>
-                        {row.ai_confidence ? `${Math.round(row.ai_confidence * 100)}%` : "-"}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -348,9 +336,9 @@ function OpportunityScanner() {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
             {(opportunities.length > 0 ? opportunities : [
-              { country: "USA", demand_score: 9.2, market_size: "$2.4B", rank: 1, ai_confidence: 0.92, tariff: 7, competition: "High", opportunity_score: 7.9, profit_estimate: { profit_per_unit: 4.2, profit_margin: 35 } },
-              { country: "UAE", demand_score: 8.6, market_size: "$1.1B", rank: 2, ai_confidence: 0.88, tariff: 5, competition: "Low", opportunity_score: 8.1, profit_estimate: { profit_per_unit: 4.2, profit_margin: 35 } },
-              { country: "Germany", demand_score: 7.9, market_size: "$900M", rank: 3, ai_confidence: 0.82, tariff: 10, competition: "High", opportunity_score: 6.4, profit_estimate: { profit_per_unit: 2.9, profit_margin: 24 } },
+              { country: "UAE", demand_score: 9, tariff: 5, competition: "Medium", opportunity_score: 4 },
+              { country: "USA", demand_score: 8, tariff: 8, competition: "High", opportunity_score: 0 },
+              { country: "Germany", demand_score: 7, tariff: 10, competition: "High", opportunity_score: -3 },
             ]).map((item, idx) => (
               <div key={`${item.country}-card-${idx}`} style={{
                 background: "white",
@@ -378,11 +366,6 @@ function OpportunityScanner() {
                 </div>
 
                 <div style={{ fontSize: "0.8rem", color: "#0f1e3a" }}>
-                  <div style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 700 }}>Import Market</div>
-                  <div style={{ fontWeight: 700 }}>{item.market_size || "-"}</div>
-                </div>
-
-                <div style={{ fontSize: "0.8rem", color: "#0f1e3a" }}>
                   <div style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 700 }}>Competition</div>
                   <div style={{ fontWeight: 700 }}>{item.competition || "Medium"}</div>
                 </div>
@@ -393,42 +376,8 @@ function OpportunityScanner() {
                 </div>
 
                 <div style={{ fontSize: "0.8rem", color: "#0f1e3a" }}>
-                  <div style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 700 }}>Profit / Unit</div>
-                  <div style={{ fontWeight: 700 }}>
-                    {item.profit_estimate?.profit_per_unit !== undefined ? `$${item.profit_estimate.profit_per_unit}` : "-"}
-                  </div>
-                </div>
-
-                <div style={{ fontSize: "0.8rem", color: "#0f1e3a" }}>
-                  <div style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 700 }}>Margin</div>
-                  <div style={{ fontWeight: 700 }}>
-                    {item.profit_estimate?.profit_margin !== undefined ? `${item.profit_estimate.profit_margin}%` : "-"}
-                  </div>
-                </div>
-
-                <div style={{ fontSize: "0.8rem", color: "#0f1e3a" }}>
                   <div style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 700 }}>Opportunity Score</div>
                   <div style={{ fontWeight: 700 }}>{item.opportunity_score !== undefined ? item.opportunity_score : "-"}</div>
-                </div>
-
-                {Array.isArray(item.why_market) && item.why_market.length > 0 && (
-                  <div style={{ fontSize: "0.78rem", color: "#1f2937", background: "#f8fafc", borderRadius: "8px", padding: "0.6rem" }}>
-                    <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#64748b", marginBottom: "0.35rem" }}>
-                      Why this market?
-                    </div>
-                    <ul style={{ margin: 0, paddingLeft: "1rem" }}>
-                      {item.why_market.map((reason, index) => (
-                        <li key={index}>{reason}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div style={{ fontSize: "0.8rem", color: "#0f1e3a" }}>
-                  <div style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 700 }}>AI Confidence</div>
-                  <div style={{ fontWeight: 700 }}>
-                    {item.ai_confidence ? `${Math.round(item.ai_confidence * 100)}%` : "-"}
-                  </div>
                 </div>
 
                 <button
@@ -476,7 +425,7 @@ function OpportunityScanner() {
         </div>
         <div style={{ background: "#f8fafc", borderRadius: "12px", padding: "1rem", border: "1px solid #e2e8f0" }}>
           <div style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 700 }}>Confidence</div>
-          <div style={{ fontSize: "1rem", fontWeight: 700, color: "#0f1e3a" }}>{result?.confidence ? `${Math.round(result.confidence * 100)}%` : "-"}</div>
+          <div style={{ fontSize: "1rem", fontWeight: 700, color: "#0f1e3a" }}>{opportunities.length ? `${opportunities.length} results` : "-"}</div>
         </div>
       </div>
     </div>

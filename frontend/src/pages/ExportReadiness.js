@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../context/LanguageContext";
+import API from "../services/api";
 
 // ── Step SVG icons ────────────────────────────────────────────────────────
 function IcClipboard() {
@@ -98,6 +99,12 @@ function ExportReadiness() {
   const navigate = useNavigate();
   const { t } = useLanguage();
 
+  const [hasIec, setHasIec] = useState(false);
+  const [productionCapacity, setProductionCapacity] = useState(0);
+  const [readinessResult, setReadinessResult] = useState(null);
+  const [readinessLoading, setReadinessLoading] = useState(false);
+  const [readinessError, setReadinessError] = useState("");
+
   // Journey step completion state
   const [journey, setJourney] = useState({
     iec: false, product: false, compliance: false, market: false, profit: false,
@@ -135,12 +142,97 @@ function ExportReadiness() {
 
   const toggleAudit = (key) => setChecked(prev => ({ ...prev, [key]: !prev[key] }));
 
+  const runReadinessCheck = async () => {
+    setReadinessError("");
+    setReadinessResult(null);
+    setReadinessLoading(true);
+    try {
+      const response = await API.get("/ai/export-readiness", {
+        params: {
+          has_iec: hasIec,
+          production_capacity: Number(productionCapacity)
+        }
+      });
+      setReadinessResult(response.data);
+    } catch (err) {
+      setReadinessError(err.response?.data?.detail || "Readiness check failed");
+    } finally {
+      setReadinessLoading(false);
+    }
+  };
+
   // SVG circle math for audit score
   const R    = 28;
   const circ = 2 * Math.PI * R;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+
+      <div style={{
+        background: "white",
+        borderRadius: "12px",
+        padding: "1.5rem",
+        border: "1px solid #e2e8f0",
+        boxShadow: "0 4px 12px rgba(15,30,58,0.08)",
+      }}>
+        <div style={{ fontSize: "0.78rem", fontWeight: "800", letterSpacing: "1px", textTransform: "uppercase", color: "#0f1e3a", marginBottom: "0.75rem" }}>
+          Export Readiness Analyzer
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", alignItems: "end" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "0.8rem", fontWeight: "700", color: "#475569", marginBottom: "0.4rem" }}>
+              Production Capacity (units)
+            </label>
+            <input
+              type="number"
+              value={productionCapacity}
+              onChange={(e) => setProductionCapacity(e.target.value)}
+              placeholder="e.g., 1200"
+              style={{ width: "100%", padding: "0.7rem 0.85rem", borderRadius: "8px", border: "1.5px solid #e2e8f0" }}
+            />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <input
+              type="checkbox"
+              checked={hasIec}
+              onChange={(e) => setHasIec(e.target.checked)}
+              id="readiness-iec"
+            />
+            <label htmlFor="readiness-iec" style={{ fontSize: "0.85rem", fontWeight: "700", color: "#0f1e3a" }}>
+              IEC Certificate Available
+            </label>
+          </div>
+        </div>
+        <button
+          onClick={runReadinessCheck}
+          disabled={readinessLoading}
+          style={{
+            marginTop: "1rem",
+            padding: "0.75rem 1.1rem",
+            borderRadius: "10px",
+            border: "none",
+            background: readinessLoading ? "#e2e8f0" : "linear-gradient(135deg, #0f1e3a 0%, #1a2f5a 100%)",
+            color: readinessLoading ? "#64748b" : "white",
+            fontWeight: 700,
+            cursor: readinessLoading ? "not-allowed" : "pointer"
+          }}
+        >
+          {readinessLoading ? "Checking..." : "Run Readiness Check"}
+        </button>
+
+        {readinessError && (
+          <div style={{ marginTop: "0.75rem", color: "#b91c1c", fontSize: "0.85rem" }}>
+            {readinessError}
+          </div>
+        )}
+
+        {readinessResult && (
+          <div style={{ marginTop: "1rem", padding: "0.9rem", borderRadius: "10px", background: "#f8fafc", border: "1px solid #e2e8f0" }}>
+            <div style={{ fontWeight: 800, color: "#0f1e3a" }}>Score: {readinessResult.readiness_score}</div>
+            <div style={{ color: "#64748b", marginTop: "0.25rem" }}>{readinessResult.status}</div>
+          </div>
+        )}
+      </div>
 
       {/* ── Export Readiness Meter ─────────────────────────────────── */}
       <div style={{

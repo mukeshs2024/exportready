@@ -8,7 +8,7 @@ PRICE_VARIANCE = 0.2
 
 
 def _get_product(product_id: int) -> dict:
-    response = supabase.table("products_marketplace").select("*").eq("id", product_id).execute()
+    response = supabase.table("products").select("*").eq("id", product_id).execute()
     if not response.data:
         raise HTTPException(status_code=404, detail="Product not found")
     return response.data[0]
@@ -27,12 +27,16 @@ def _get_offers(order_id: int) -> list:
 
 
 def _create_notification(user_id: int, order_id: int, note_type: str, message: str):
-    supabase.table("notifications").insert({
-        "user_id": user_id,
-        "order_id": order_id,
-        "type": note_type,
-        "message": message
-    }).execute()
+    try:
+        supabase.table("notifications").insert({
+            "user_id": user_id,
+            "order_id": order_id,
+            "type": note_type,
+            "message": message
+        }).execute()
+    except Exception as exc:
+        # Notifications are best-effort; do not fail order creation if table is missing.
+        print("[orders.notification] error:", exc)
 
 
 def _validate_buyer_price(product: dict, offer_price: float):
@@ -56,7 +60,7 @@ def create_order(
     message: str = ""
 ):
     product = _get_product(product_id)
-    minimum_order = product.get("minimum_order_quantity") or 0
+    minimum_order = product.get("min_order") or 0
     if quantity < minimum_order:
         raise HTTPException(status_code=400, detail=f"Quantity must be at least {minimum_order}")
 
@@ -68,7 +72,7 @@ def create_order(
 
     _validate_buyer_price(product, offer_price)
 
-    seller_id = product.get("exporter_id")
+    seller_id = product.get("seller_id")
     if not seller_id:
         raise HTTPException(status_code=400, detail="Exporter not found for this product")
 
@@ -112,7 +116,7 @@ def create_order(
 @router.get("/buyer/orders")
 def list_buyer_orders(buyer_id: int):
     response = supabase.table("orders").select(
-        "*, product:product_id(id, product_name, price, minimum_order_quantity), seller:seller_id(id, name, company_name, country)",
+        "*, product:product_id(id, product_name, price, min_order), seller:seller_id(id, name, company_name, country)",
         count="exact"
     ).eq("buyer_id", buyer_id).order("created_at", desc=True).execute()
 

@@ -150,10 +150,15 @@ function MarketAnalysis() {
     setResult(null);
     setLoading(true);
     try {
-      const res = await API.get("/export-analysis", {
-        params: { product: productName }
+      const res = await API.get("/ai/market-analysis", {
+        params: { product_name: productName }
       });
-      setResult(res.data);
+      setResult({
+        product: productName,
+        top_markets: res.data || [],
+        documents_required: [],
+        potential_buyers: []
+      });
     } catch (err) {
       setError(err.response?.data?.detail || "Something went wrong");
     } finally {
@@ -397,8 +402,15 @@ function MarketAnalysis() {
               <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.25rem"}}>
                 {result.top_markets.map((market, i) => (
                   <div key={i} style={{padding:"1.25rem",background:"white",borderRadius:"8px",border:"1px solid #d1fae5",fontWeight:"600",color:"#059669",textAlign:"center",boxShadow:"0 1px 3px rgba(15, 30, 58, 0.1)"}}>
-                    <div>{market[0]}</div>
-                    <div style={{fontSize:"0.75rem",color:"#6b7280",marginTop:"0.25rem"}}>Demand Score: {market[1]}</div>
+                    <div>{market.country || market[0]}</div>
+                    <div style={{fontSize:"0.75rem",color:"#6b7280",marginTop:"0.25rem"}}>
+                      Demand Score: {market.demand_score ?? market[1]}
+                    </div>
+                    {market.market_size && (
+                      <div style={{fontSize:"0.72rem",color:"#6b7280",marginTop:"0.2rem"}}>
+                        Market Size: {market.market_size}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

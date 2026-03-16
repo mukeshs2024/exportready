@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 
 const IconSearch = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -71,6 +71,38 @@ function Navbar() {
         <button className="aurora-icon-btn" title="Settings">
           {IconSettings}
         </button>
+        {location.pathname !== "/login" && (
+          <Link to="/login" style={{
+            fontWeight: 700,
+            color: "#0f1e3a",
+            background: "#e0e7ef",
+            padding: "0.55rem 1.2rem",
+            borderRadius: "8px",
+            textDecoration: "none",
+            fontSize: "1rem",
+            boxShadow: "0 2px 8px rgba(15,30,58,0.06)",
+            transition: "background 0.2s",
+            marginLeft: "1.2rem"
+          }}>
+            Sign In
+          </Link>
+        )}
+        {location.pathname !== "/signup" && (
+          <Link to="/signup" style={{
+            fontWeight: 700,
+            color: "#fff",
+            background: "#0f1e3a",
+            padding: "0.55rem 1.2rem",
+            borderRadius: "8px",
+            textDecoration: "none",
+            fontSize: "1rem",
+            boxShadow: "0 2px 8px rgba(15,30,58,0.10)",
+            transition: "background 0.2s",
+            marginLeft: "0.5rem"
+          }}>
+            Sign Up
+          </Link>
+        )}
       </div>
     </div>
   );

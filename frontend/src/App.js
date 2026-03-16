@@ -7,11 +7,14 @@ import "./App.css";
 
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
+import AuthLayout from "./layouts/AuthLayout";
 import AIPopup from "./components/AIPopup";
 import SplashScreen from "./components/SplashScreen";
 import Onboarding from "./components/Onboarding";
 
 import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import MarketAnalysis from "./pages/MarketAnalysis";
 import ProfitSimulator from "./pages/ProfitSimulator";
 import ExportPlan from "./pages/ExportPlan";
@@ -71,73 +74,63 @@ function App() {
 
   return (
     <LanguageProvider>
-    <Router>
-      {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
-      {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
-
-      <Navbar />
-
-      <div className="aurora-ticker">
-        <div className="aurora-ticker-label">
-          <span /> Live
-        </div>
-        <div className="aurora-ticker-track">
-          {[...tickerItems, ...tickerItems].map((item, index) => (
-            <div key={`${item.country}-${index}`} className="aurora-ticker-item">
-              {item.flag} {item.country} · <strong>{item.product}</strong> · {" "}
-              <em style={{ color: item.tone === "red" ? "#FF4848" : item.tone === "blue" ? "#4894FF" : "#00D2AA" }}>
-                {item.change}
-              </em>
-            </div>
-          ))}
-        </div>
-        <div className="aurora-ticker-fade left" />
-        <div className="aurora-ticker-fade right" />
-      </div>
-
-      <div style={{ display: "flex", marginTop: "86px" }}>
-
-        <Sidebar isCollapsed={isCollapsed} />
-
-        <div className="aurora-main" style={{
-          marginLeft: "220px",
-          flex: 1,
-        }}>
-          <div className="aurora-container">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-            <Route path="/product" element={<ExporterProducts />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/market" element={<MarketAnalysis />} />
-            <Route path="/profit" element={<ProfitSimulator />} />
-            <Route path="/opportunity" element={<OpportunityScanner />} />
-            <Route path="/export-plan" element={<ExportPlan />} />
-            <Route path="/products" element={<ProductsMarketplace />} />
-            <Route path="/marketplace" element={<ProductsMarketplace />} />
-            <Route path="/compliance" element={<Compliance />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/chatbot" element={<ExportAdvisor />} />
-            <Route path="/docs" element={<DocumentGenerator />} />
-            <Route path="/readiness" element={<ExportReadiness />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<AccountSettings />} />
-            <Route path="/buyer/orders" element={<BuyerOrders />} />
-            <Route path="/buyer/orders/:id" element={<BuyerOrderDetail />} />
-            <Route path="/importer/register" element={<ImporterRegister />} />
-            <Route path="/exporter/dashboard" element={<ExporterDashboard />} />
-            <Route path="/exporter/products" element={<ExporterProducts />} />
-            <Route path="/exporter/orders" element={<ExporterOrders />} />
-            <Route path="/exporter/orders/:id" element={<ExporterOrderDetail />} />
-            <Route path="/exporter/register" element={<ExporterRegister />} />
-            </Routes>
-          </div>
-        </div>
-
-      </div>
-
-      <AIPopup isOpen={isAIChatOpen} onClose={closeAIChat} onOpen={openAIChat} />
-
-    </Router>
+      <Router>
+        {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
+        {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
+        <Routes>
+          {/* Auth routes: no Navbar/Sidebar */}
+          <Route path="/login" element={
+            <AuthLayout>
+              <Login />
+            </AuthLayout>
+          } />
+          <Route path="/signup" element={
+            <AuthLayout>
+              <Signup />
+            </AuthLayout>
+          } />
+          {/* Main app routes: with Navbar/Sidebar */}
+          <Route path="*" element={
+            <>
+              <Navbar />
+              <div style={{ display: "flex", marginTop: "86px" }}>
+                <Sidebar isCollapsed={isCollapsed} />
+                <div className="aurora-main" style={{ marginLeft: "220px", flex: 1 }}>
+                  <div className="aurora-container">
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/product" element={<ExporterProducts />} />
+                      <Route path="/product/:id" element={<ProductDetail />} />
+                      <Route path="/market" element={<MarketAnalysis />} />
+                      <Route path="/profit" element={<ProfitSimulator />} />
+                      <Route path="/opportunity" element={<OpportunityScanner />} />
+                      <Route path="/export-plan" element={<ExportPlan />} />
+                      <Route path="/products" element={<ProductsMarketplace />} />
+                      <Route path="/marketplace" element={<ProductsMarketplace />} />
+                      <Route path="/compliance" element={<Compliance />} />
+                      <Route path="/reports" element={<Reports />} />
+                      <Route path="/chatbot" element={<ExportAdvisor />} />
+                      <Route path="/docs" element={<DocumentGenerator />} />
+                      <Route path="/readiness" element={<ExportReadiness />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/settings" element={<AccountSettings />} />
+                      <Route path="/buyer/orders" element={<BuyerOrders />} />
+                      <Route path="/buyer/orders/:id" element={<BuyerOrderDetail />} />
+                      <Route path="/importer/register" element={<ImporterRegister />} />
+                      <Route path="/exporter/dashboard" element={<ExporterDashboard />} />
+                      <Route path="/exporter/products" element={<ExporterProducts />} />
+                      <Route path="/exporter/orders" element={<ExporterOrders />} />
+                      <Route path="/exporter/orders/:id" element={<ExporterOrderDetail />} />
+                      <Route path="/exporter/register" element={<ExporterRegister />} />
+                    </Routes>
+                  </div>
+                </div>
+              </div>
+              <AIPopup isOpen={isAIChatOpen} onClose={closeAIChat} onOpen={openAIChat} />
+            </>
+          } />
+        </Routes>
+      </Router>
     </LanguageProvider>
   );
 }

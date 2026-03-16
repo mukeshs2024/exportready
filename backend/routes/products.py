@@ -1,7 +1,6 @@
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from postgrest.exceptions import APIError
 from database.connection import supabase
 
 router = APIRouter()
@@ -60,7 +59,7 @@ def add_marketplace_product(
 
     try:
         response = supabase.table("products_marketplace").insert(data).execute()
-    except APIError as e:
+    except Exception as e:
         msg = e.args[0] if e.args else str(e)
         if isinstance(msg, dict):
             msg = msg.get("message", str(msg))
@@ -192,6 +191,23 @@ def search_products(
         }
 
 
+@router.get("/marketplace")
+def marketplace_products(
+    category: Optional[str] = Query(None),
+    name: Optional[str] = Query(None),
+    exporter_country: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(12, ge=1, le=50)
+):
+    return search_products(
+        category=category,
+        name=name,
+        exporter_country=exporter_country,
+        page=page,
+        page_size=page_size
+    )
+
+
 @router.get("/marketplace/products/{product_id}")
 def get_marketplace_product(product_id: int):
     try:
@@ -256,7 +272,7 @@ def create_exporter_product(
 
     try:
         marketplace_response = supabase.table("products_marketplace").insert(marketplace_data).execute()
-    except APIError as e:
+    except Exception as e:
         msg = e.args[0] if e.args else str(e)
         if isinstance(msg, dict):
             msg = msg.get("message", str(msg))

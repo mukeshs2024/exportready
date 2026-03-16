@@ -29,21 +29,15 @@ function ExporterRegister() {
 
     setLoading(true);
     try {
-      const response = await API.post("/register-exporter", null, {
-        params: {
-          name: form.name.trim(),
-          company_name: form.company.trim(),
-          country: form.country.trim(),
-          email: form.email.trim(),
-          phone: form.phone.trim(),
-          password: form.password
-        }
+      await API.post("/auth/signup", {
+        name: form.name.trim(),
+        company_name: form.company.trim(),
+        country: form.country.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        password: form.password,
+        role: "exporter"
       });
-
-      const created = response.data?.data?.[0];
-      if (created?.id) {
-        localStorage.setItem("exporter_id", String(created.id));
-      }
       setSuccess("Exporter account created.");
       setForm({ name: "", company: "", country: "", email: "", phone: "", password: "" });
     } catch (err) {

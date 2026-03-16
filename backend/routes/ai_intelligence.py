@@ -11,6 +11,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
+from openai import OpenAI
 from database.connection import supabase
 from ai.market_analysis import calculate_profit, get_recommended_markets
 
@@ -21,6 +22,8 @@ router = APIRouter()
 _API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 _CLAUDE_URL = "https://api.anthropic.com/v1/messages"
 _CLAUDE_MODEL = "claude-3-haiku-20240307"
+_OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
+_OPENAI_CLIENT = OpenAI(api_key=_OPENAI_KEY) if _OPENAI_KEY else None
 
 # ---------------------------------------------------------------------------
 # Export Advisor Architecture Helpers
@@ -51,6 +54,7 @@ _KNOWN_COUNTRIES = [
     "nigeria",
     "brazil",
 ]
+
 
 def _load_region_countries() -> dict[str, list[str]]:
     data_path = os.path.join(os.path.dirname(__file__), "..", "data", "region_countries.json")
@@ -89,8 +93,13 @@ def _jaccard(a: set[str], b: set[str]) -> float:
     return len(a & b) / len(a | b)
 
 
-def _mmr_select(docs: list[dict[str, Any]], query: str, k: int = 5, fetch_k: int = 20,
-                lambda_mult: float = 0.6) -> tuple[list[dict[str, Any]], float]:
+def _mmr_select(
+    docs: list[dict[str, Any]],
+    query: str,
+    k: int = 5,
+    fetch_k: int = 20,
+    lambda_mult: float = 0.6
+) -> tuple[list[dict[str, Any]], float]:
     candidates = docs[:fetch_k]
     if not candidates:
         return [], 0.0
@@ -581,102 +590,139 @@ def _extract_json(text: str, array: bool = True) -> dict | list:
     return json.loads(text[start:end])
 
 
-# ---------------------------------------------------------------------------
-# 1. AI Market Intelligence Cards
-# ---------------------------------------------------------------------------
-
-_MARKET_FALLBACK = [
-    {"country": "UAE", "demand_index": 91, "import_volume": "$6.8B/year", "tariff": "0% (CEPA)", "best_route": "FOB Mumbai → Jebel Ali", "buyers": ["Al Maya Group", "Lulu Hypermarket", "Carrefour UAE"]},
-    {"country": "USA", "demand_index": 87, "import_volume": "$12.4B/year", "tariff": "6-12% MFN", "best_route": "FOB JNPT → Los Angeles / New York", "buyers": ["Walmart", "Amazon Business", "Whole Foods"]},
-    {"country": "Germany", "demand_index": 78, "import_volume": "$4.1B/year", "tariff": "3.5% EU GSP", "best_route": "FOB Mumbai → Hamburg", "buyers": ["Metro AG", "REWE Group", "Kaufland"]},
-    {"country": "UK", "demand_index": 74, "import_volume": "$3.2B/year", "tariff": "4% UK GSP", "best_route": "FOB JNPT → Felixstowe", "buyers": ["Tesco", "Sainsbury's", "Asda"]},
-    {"country": "Australia", "demand_index": 69, "import_volume": "$1.8B/year", "tariff": "0% ECTA", "best_route": "FOB Chennai → Sydney", "buyers": ["Woolworths AU", "Coles", "IGA"]},
-]
-
-@router.post("/market-analysis-ai")
-def ai_market_analysis(product: str):
-    """
-    Returns AI-generated market intelligence cards for a product.
-    Falls back to realistic static data when AI is unavailable.
-    """
-    prompt = f"""You are an international trade analyst specializing in Indian exports.
-
-Analyze the top 5 export markets for this product: {product}
-
-Return ONLY a valid JSON array — no markdown fences, no explanation — in exactly this format:
-[
-  {{
-    "country": "USA",
-    "demand_index": 94,
-    "import_volume": "$8.2B/year",
-    "tariff": "12%",
-    "best_route": "FOB Mumbai → Los Angeles",
-    "buyers": ["Walmart", "Target", "Amazon Business"]
-  }}
-]
-
-Use realistic trade data. Provide exactly 5 entries."""
-
+@router.get("/ai/opportunity-scanner")
+def opportunity_scanner(product_name: str):
     try:
-        text = _call_claude(prompt, max_tokens=1200)
-        markets = _extract_json(text, array=True)
-        return {"product": product, "markets": markets, "source": "ai"}
-    except Exception:
-        pass
+        market = supabase.table("market_data").select("*").eq("product_name", product_name).execute()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to load market data: {exc}")
 
-    return {"product": product, "markets": _MARKET_FALLBACK, "source": "static"}
+    results: list[dict[str, Any]] = []
+    for row in market.data or []:
+        trade = supabase.table("country_trade_data").select("*").eq("country", row["country"]).execute()
+        if trade.data:
+            tariff = trade.data[0].get("tariff_percentage", 0)
+            competition = trade.data[0].get("competition_level", "")
+            score = (row.get("demand_score", 0) or 0) - (tariff or 0)
+
+            results.append({
+                "country": row.get("country"),
+                "demand_score": row.get("demand_score"),
+                "tariff": tariff,
+                "competition": competition,
+                "opportunity_score": score
+            })
+
+    results.sort(key=lambda x: x.get("opportunity_score", 0), reverse=True)
+    top = results[0] if results else None
+    explanation = ""
+
+    if top and _OPENAI_CLIENT:
+        prompt = (
+            "Explain why {country} is a good export market for {product}.\n"
+            "Demand score: {demand}\n"
+            "Tariff: {tariff}%\n"
+            "Competition level: {competition}\n"
+            "Give a short explanation for an MSME exporter."
+        ).format(
+            country=top.get("country"),
+            product=product_name,
+            demand=top.get("demand_score"),
+            tariff=top.get("tariff"),
+            competition=top.get("competition"),
+        )
+        try:
+            ai = _OPENAI_CLIENT.chat.completions.create(
+                model="gpt-4.1-mini",
+                messages=[{"role": "user", "content": prompt}],
+            )
+            explanation = (ai.choices[0].message.content or "").strip()
+        except Exception:
+            explanation = ""
+
+    if not explanation and top:
+        explanation = (
+            f"{top.get('country')} has strong demand and a favorable tariff profile "
+            "relative to other markets, making it a practical entry market for MSME exporters."
+        )
+
+    confidence = None
+    if top is not None:
+        score_value = top.get("opportunity_score")
+        if score_value is not None:
+            if score_value >= 4:
+                confidence = "High"
+            elif score_value >= 2:
+                confidence = "Medium"
+            else:
+                confidence = "Low"
+
+    return {
+        "top_market": top.get("country") if top else None,
+        "score": top.get("opportunity_score") if top else None,
+        "confidence": confidence,
+        "analysis": results[:3],
+        "ai_explanation": explanation,
+    }
 
 
-# ---------------------------------------------------------------------------
-# 2. HS Code AI Suggestion
-# ---------------------------------------------------------------------------
-
-_HS_FALLBACK = {
-    "rice": {"hs_code": "1006.30", "description": "Semi-milled or wholly milled rice", "chapter": "Chapter 10 - Cereals"},
-    "wheat": {"hs_code": "1001.99", "description": "Wheat and meslin, other", "chapter": "Chapter 10 - Cereals"},
-    "spice": {"hs_code": "0910.99", "description": "Spices, other", "chapter": "Chapter 09 - Coffee, Tea, Spices"},
-    "turmeric": {"hs_code": "0910.30", "description": "Turmeric (curcuma)", "chapter": "Chapter 09 - Coffee, Tea, Spices"},
-    "cotton": {"hs_code": "5201.00", "description": "Cotton, not carded or combed", "chapter": "Chapter 52 - Cotton"},
-    "shirt": {"hs_code": "6205.20", "description": "Men's shirts of cotton", "chapter": "Chapter 62 - Apparel"},
-    "garment": {"hs_code": "6211.42", "description": "Garments of cotton", "chapter": "Chapter 62 - Apparel"},
-    "pharma": {"hs_code": "3004.90", "description": "Medicaments, other", "chapter": "Chapter 30 - Pharmaceutical"},
-    "mobile": {"hs_code": "8517.12", "description": "Telephones for cellular networks", "chapter": "Chapter 85 - Electrical Machinery"},
-    "software": {"hs_code": "8523.49", "description": "Recorded media for sound/data", "chapter": "Chapter 85 - Electrical Machinery"},
-}
-
-@router.get("/hs-suggest")
-def hs_suggest(product: str):
-    """
-    Returns the suggested HS Code and description for a given product.
-    Falls back to keyword-matched static table when AI is unavailable.
-    """
-    prompt = f"""You are an international trade classification expert.
-
-Suggest the most accurate HS Code for this product: {product}
-
-Return ONLY a valid JSON object — no markdown, no explanation:
-{{
-  "hs_code": "1006.30",
-  "description": "Semi milled or wholly milled rice, whether or not polished or glazed",
-  "chapter": "Chapter 10 - Cereals"
-}}"""
-
-    try:
-        text = _call_claude(prompt, max_tokens=250)
-        return _extract_json(text, array=False)
-    except Exception:
-        pass
-
-    p = product.lower()
-    for key, val in _HS_FALLBACK.items():
-        if key in p:
-            return val
-    return {"hs_code": "9999.99", "description": product.title(), "chapter": "Chapter 99 - Miscellaneous"}
+@router.get("/ai/market-analysis")
+def market_analysis(product_name: str):
+    data = supabase.table("market_data").select("*").eq("product_name", product_name).execute()
+    return data.data or []
 
 
-# ---------------------------------------------------------------------------
-# 3. Context-Aware Export Chat
-# ---------------------------------------------------------------------------
+@router.get("/ai/demand-heatmap")
+def demand_heatmap(product_name: str):
+    data = (
+        supabase.table("market_data")
+        .select("country, demand_score")
+        .eq("product_name", product_name)
+        .execute()
+    )
+    return data.data or []
+
+
+@router.post("/ai/profit-simulator")
+def profit_simulator(product_id: int, country: str, shipping_cost: float, production_cost: float):
+    product = supabase.table("products").select("*").eq("id", product_id).execute()
+    if not product.data:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    price = product.data[0].get("price")
+
+    trade = supabase.table("country_trade_data").select("*").eq("country", country).execute()
+    if not trade.data:
+        raise HTTPException(status_code=404, detail="Trade data not found for country")
+
+    tariff = trade.data[0].get("tariff_percentage", 0)
+    duties = (price or 0) * ((tariff or 0) / 100)
+
+    profit = (price or 0) - (production_cost + shipping_cost + duties)
+
+    return {
+        "selling_price": price,
+        "production_cost": production_cost,
+        "shipping_cost": shipping_cost,
+        "duties": duties,
+        "estimated_profit": profit
+    }
+
+
+@router.get("/ai/export-readiness")
+def export_readiness(has_iec: bool, production_capacity: int):
+    score = 0
+    if has_iec:
+        score += 50
+    if production_capacity > 500:
+        score += 30
+    if production_capacity > 2000:
+        score += 20
+
+    return {
+        "readiness_score": score,
+        "status": "Ready" if score >= 70 else "Needs Improvement"
+    }
 
 
 class ExportPlanRequest(BaseModel):
@@ -687,88 +733,6 @@ class ExportPlanRequest(BaseModel):
     production_cost: float | None = None
     shipping_cost: float | None = None
     duty_percentage: float | None = None
-
-@router.post("/export-chat")
-def export_chat(
-    question: str,
-    product: str = "",
-    country: str = "",
-    session_id: str = "",
-    hs_code: str = "",
-    target_region: str = "",
-    product_price: float | None = None,
-    production_cost: float | None = None,
-    shipping_cost: float | None = None,
-    duty_percentage: float | None = None,
-):
-    """
-    Structured export advisory response with intent routing, hybrid engines,
-    Supabase-backed memory, and compliance RAG.
-    """
-    if not question or not question.strip():
-        raise HTTPException(status_code=400, detail="Question is required")
-
-    scan_match = re.match(r"^/scan-opportunity\s+(.*)", question.strip(), re.IGNORECASE)
-    scan_mode = False
-    if scan_match:
-        scan_mode = True
-        product = scan_match.group(1).strip() or product
-
-    history = _load_chat_history(session_id, limit=6)
-    memory_context = " ".join(
-        [entry.get("content", "") for entry in history if entry.get("role") == "user"]
-    )
-
-    if not country:
-        country = _detect_country(" ".join([question, memory_context]))
-
-    scan_query = question
-    if scan_mode:
-        scan_parts = [f"global demand for {product}"]
-        if hs_code:
-            scan_parts.append(f"HS code {hs_code}")
-        if target_region:
-            scan_parts.append(f"in {target_region}")
-        scan_query = " ".join(scan_parts)
-
-    combined_query = " ".join([scan_query, memory_context]).strip()
-    intent = "market" if scan_mode else intent_router(combined_query)
-
-    engine = export_intelligence_engine(
-        intent,
-        scan_query,
-        product,
-        country,
-        {
-            "product_price": product_price,
-            "production_cost": production_cost,
-            "shipping_cost": shipping_cost,
-            "duty_percentage": duty_percentage,
-        },
-        memory_context,
-        target_region=target_region,
-    )
-
-    formatted = response_formatter(
-        intent,
-        question,
-        product,
-        country,
-        engine,
-        session_id,
-        scan_mode=scan_mode,
-        pricing={
-            "product_price": product_price,
-            "production_cost": production_cost,
-            "shipping_cost": shipping_cost,
-            "duty_percentage": duty_percentage,
-        },
-    )
-
-    _save_chat_message(session_id, "user", question)
-    _save_chat_message(session_id, "assistant", formatted.get("response", ""))
-
-    return formatted
 
 
 @router.post("/generate-export-plan")

@@ -17,8 +17,9 @@ function Dashboard() {
   const [tradeData, setTradeData] = useState(null);
   const [opportunities, setOpportunities] = useState([]);
   const [opportunityLoading, setOpportunityLoading] = useState(false);
+  const [heatmapData, setHeatmapData] = useState([]);
+  const [heatmapLoading, setHeatmapLoading] = useState(false);
   const [tooltip, setTooltip] = useState(null);
-  const [opportunityTooltip, setOpportunityTooltip] = useState(null);
   const [lastScan, setLastScan] = useState({
     product: "Cotton Shirts",
     hsCode: "6205",
@@ -29,7 +30,6 @@ function Dashboard() {
     dutyPercentage: 5,
   });
   const mapRef = useRef(null);
-  const opportunityMapRef = useRef(null);
 
   useEffect(() => {
     API.get("/trade-volume", { params: { product_hs: "1006" } })
@@ -76,6 +76,15 @@ function Dashboard() {
       .catch(() => {})
       .finally(() => setOpportunityLoading(false));
   }, [lastScan.product, lastScan.hsCode, lastScan.region, lastScan.productPrice, lastScan.productionCost, lastScan.shippingCost, lastScan.dutyPercentage]);
+
+  useEffect(() => {
+    if (!lastScan.product) return;
+    setHeatmapLoading(true);
+    API.get("/ai/demand-heatmap", { params: { product_name: lastScan.product } })
+      .then(res => setHeatmapData(res.data || []))
+      .catch(() => setHeatmapData([]))
+      .finally(() => setHeatmapLoading(false));
+  }, [lastScan.product]);
 
   const insightCards = [
     { label: "Products Listed", value: "3", accent: "#2F6BFF" },
@@ -129,43 +138,33 @@ function Dashboard() {
     }));
   };
 
-  const normalizeCountryName = (name) => {
-    const map = {
-      USA: "United States of America",
-      UK: "United Kingdom",
-      UAE: "United Arab Emirates",
-      "South Korea": "Korea, Republic of",
-      "North Korea": "Korea, Democratic People's Republic of",
-    };
-    return map[name] || name;
+  const normalizeCountry = (name) => (name || "")
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
+
+  const countryAliases = {
+    usa: "united states of america",
+    uk: "united kingdom",
+    uae: "united arab emirates",
   };
 
-  const getOpportunityColor = (score) => {
-    if (score >= 8.5) return "#1a9850";
-    if (score >= 7.2) return "#91cf60";
-    if (score >= 6) return "#d9f0a3";
-    return "#e2e8f0";
+  const demandColor = (score) => {
+    if (score >= 9) return "#dc2626";
+    if (score >= 7) return "#f97316";
+    if (score >= 5) return "#eab308";
+    return "#16a34a";
   };
 
-  const handleOpportunityEnter = (event, content) => {
-    const bounds = opportunityMapRef.current?.getBoundingClientRect();
-    if (!bounds) return;
-    setOpportunityTooltip({
-      x: event.clientX - bounds.left + 12,
-      y: event.clientY - bounds.top + 12,
-      content,
-    });
-  };
+  const heatmapLookup = heatmapData.reduce((acc, row) => {
+    const rawName = (row?.country || "").toLowerCase();
+    const mapped = countryAliases[rawName] || row?.country;
+    const key = normalizeCountry(mapped);
+    if (key) {
+      acc[key] = row;
+    }
+    return acc;
+  }, {});
 
-  const handleOpportunityMove = (event) => {
-    if (!opportunityTooltip || !opportunityMapRef.current) return;
-    const bounds = opportunityMapRef.current.getBoundingClientRect();
-    setOpportunityTooltip(prev => ({
-      ...prev,
-      x: event.clientX - bounds.left + 12,
-      y: event.clientY - bounds.top + 12,
-    }));
-  };
 
   const barData = {
     labels: ["UAE", "USA", "Germany", "Japan", "UK", "Singapore", "France"],
@@ -298,67 +297,6 @@ function Dashboard() {
           </div>
         </div>
 
-        <div
-          ref={opportunityMapRef}
-          onMouseMove={handleOpportunityMove}
-          style={{ background: "#f8fafc", borderRadius: "12px", border: "1px solid #e2e8f0", padding: "0.75rem" }}
-        >
-          {tooltip && (
-            <div className="aurora-tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
-              {tooltip.content.split("\n").map((line, index) => (
-                <div key={index}>{line}</div>
-              ))}
-            </div>
-          )}
-          <ComposableMap projectionConfig={{ scale: 140 }}>
-            <Geographies geography="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json">
-              {({ geographies }) =>
-                geographies.map(geo => {
-                  const match = opportunities.find((item) =>
-                    normalizeCountryName(item.country) === geo.properties.NAME
-                  );
-                  const score = match?.opportunity_score ?? 0;
-                  return (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      fill={match ? getOpportunityColor(score) : "#e2e8f0"}
-                      stroke="#E3E9F3"
-                      strokeWidth={0.5}
-                      onMouseEnter={(event) => {
-                        if (!match) return;
-                        const profit = match.profit_estimate?.profit_per_unit;
-                        const tooltipText = [
-                          match.country,
-                          `Opportunity Score: ${match.opportunity_score ?? "-"}`,
-                          `Tariff: ${match.tariff ?? "-"}%`,
-                          `Profit/Unit: ${profit !== undefined ? `$${profit}` : "-"}`,
-                        ].join("\n");
-                        handleOpportunityEnter(event, tooltipText);
-                      }}
-                      onMouseLeave={() => setOpportunityTooltip(null)}
-                    />
-                  );
-                })
-              }
-            </Geographies>
-          </ComposableMap>
-        </div>
-
-        <div style={{ display: "flex", gap: "12px", marginTop: "12px", fontSize: "11px", color: "#64748b" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#1a9850" }} /> High
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#91cf60" }} /> Medium
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#d9f0a3" }} /> Emerging
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#e2e8f0" }} /> Low
-          </div>
-        </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px", marginTop: "16px" }}>
           {(opportunities.length > 0 ? opportunities.slice(0, 4) : []).map((item) => (
@@ -403,6 +341,62 @@ function Dashboard() {
               </button>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="aurora-panel">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div className="aurora-card-icon" style={{ background: "rgba(47,107,255,0.12)", color: "#2F6BFF" }}>
+              <Globe size={18} />
+            </div>
+            <h3 className="aurora-section-title">Global Demand Map</h3>
+          </div>
+          <div style={{ fontSize: "12px", color: "#94A3B8" }}>
+            {heatmapLoading ? "Loading map..." : lastScan.product}
+          </div>
+        </div>
+
+        <div style={{ width: "100%", height: "320px" }}>
+          <ComposableMap projectionConfig={{ scale: 150 }}>
+            <Geographies geography="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json">
+              {({ geographies }) =>
+                geographies.map(geo => {
+                  const key = normalizeCountry(geo.properties.NAME);
+                  const match = heatmapLookup[key];
+                  const score = match?.demand_score ?? null;
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill={score !== null ? demandColor(score) : "#E2E8F0"}
+                      stroke="#FFFFFF"
+                      strokeWidth={0.5}
+                    />
+                  );
+                })
+              }
+            </Geographies>
+          </ComposableMap>
+        </div>
+
+        <div style={{ display: "flex", gap: "12px", marginTop: "10px", flexWrap: "wrap", fontSize: "12px", color: "#475569" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: "10px", height: "10px", borderRadius: "999px", background: "#dc2626" }} />
+            High demand
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: "10px", height: "10px", borderRadius: "999px", background: "#f97316" }} />
+            Medium demand
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: "10px", height: "10px", borderRadius: "999px", background: "#eab308" }} />
+            Growing demand
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: "10px", height: "10px", borderRadius: "999px", background: "#16a34a" }} />
+            Emerging market
+          </div>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import API from "../services/api";
 import Toast from "../components/Toast";
@@ -10,7 +10,7 @@ function ExporterOrderDetail() {
   const [success, setSuccess] = useState("");
   const [counter, setCounter] = useState({ price: "", message: "" });
 
-  const fetchDetail = async () => {
+  const fetchDetail = useCallback(async () => {
     setError("");
     try {
       const response = await API.get(`/exporter/orders/${id}`);
@@ -18,11 +18,11 @@ function ExporterOrderDetail() {
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to load order");
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchDetail();
-  }, [id]);
+  }, [fetchDetail]);
 
   const pricingRange = useMemo(() => {
     const base = Number(detail?.product?.price || 0);
@@ -115,7 +115,7 @@ function ExporterOrderDetail() {
               <div key={offer.id} style={{ background: "#f8fafc", borderRadius: "12px", padding: "1rem", border: "1px solid #e2e8f0" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ fontWeight: 700, color: "#0f1e3a" }}>
-                    {offer.sender_id === detail.order?.buyer_id ? "Buyer" : "Seller"} -> ${Number(offer.price || 0).toFixed(2)}
+                    {`${offer.sender_id === detail.order?.buyer_id ? "Buyer" : "Seller"} -> $${Number(offer.price || 0).toFixed(2)}`}
                   </div>
                   <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>Round {offer.round_number}</div>
                 </div>
