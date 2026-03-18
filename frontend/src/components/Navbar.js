@@ -1,5 +1,25 @@
-import { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
+
+const IconSun = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5" />
+    <line x1="12" y1="1" x2="12" y2="3" />
+    <line x1="12" y1="21" x2="12" y2="23" />
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+    <line x1="1" y1="12" x2="3" y2="12" />
+    <line x1="21" y1="12" x2="23" y2="12" />
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+  </svg>
+);
+
+const IconMoon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
 
 const IconSearch = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -36,6 +56,22 @@ const TITLE_MAP = {
 
 function Navbar() {
   const location = useLocation();
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "light";
+  });
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+  };
+
+  // Apply theme on mount
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
   const title = TITLE_MAP[location.pathname] || "ExportReady";
   const dateLabel = useMemo(() => {
     const now = new Date();
@@ -71,11 +107,18 @@ function Navbar() {
         <button className="aurora-icon-btn" title="Settings">
           {IconSettings}
         </button>
+        <button 
+          className="aurora-icon-btn" 
+          title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+          onClick={handleThemeToggle}
+        >
+          {theme === "light" ? IconMoon : IconSun}
+        </button>
         {location.pathname !== "/login" && (
           <Link to="/login" style={{
             fontWeight: 700,
-            color: "#0f1e3a",
-            background: "#e0e7ef",
+            color: "var(--aurora-text)",
+            background: "var(--aurora-hover)",
             padding: "0.55rem 1.2rem",
             borderRadius: "8px",
             textDecoration: "none",
@@ -91,7 +134,7 @@ function Navbar() {
           <Link to="/signup" style={{
             fontWeight: 700,
             color: "#fff",
-            background: "#0f1e3a",
+            background: "var(--aurora-blue)",
             padding: "0.55rem 1.2rem",
             borderRadius: "8px",
             textDecoration: "none",

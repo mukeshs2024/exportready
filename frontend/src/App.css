@@ -6,6 +6,7 @@
   --aurora-card: #FFFFFF;
   --aurora-hover: #EEF3FA;
   --aurora-border: #E3E9F3;
+  --aurora-sidebar-bg: #F1F4F8;
 
   --aurora-blue: #2F6BFF;
   --aurora-gold: #F5A623;
@@ -15,6 +16,25 @@
 
   --aurora-text: #0F172A;
   --aurora-text-secondary: #475569;
+  --aurora-text-muted: #94A3B8;
+}
+
+[data-theme="dark"] {
+  --aurora-bg-base: #0B1220;
+  --aurora-surface: #111827;
+  --aurora-card: #111827;
+  --aurora-hover: #17213A;
+  --aurora-border: #1F2A44;
+  --aurora-sidebar-bg: #0F1623;
+
+  --aurora-blue: #7AA2FF;
+  --aurora-gold: #F6C453;
+  --aurora-green: #34D399;
+  --aurora-purple: #A78BFA;
+  --aurora-red: #F87171;
+
+  --aurora-text: #E5E7EB;
+  --aurora-text-secondary: #CBD5F5;
   --aurora-text-muted: #94A3B8;
 }
 
@@ -136,7 +156,7 @@
 
 .aurora-icon-btn:hover {
   background: var(--aurora-hover);
-  border-color: #D7E1EC;
+  border-color: var(--aurora-border);
   color: var(--aurora-text);
 }
 
@@ -204,12 +224,12 @@
 
 .aurora-ticker-fade.left {
   left: 0;
-  background: linear-gradient(90deg, #FFFFFF 0%, transparent 100%);
+  background: linear-gradient(90deg, var(--aurora-surface) 0%, transparent 100%);
 }
 
 .aurora-ticker-fade.right {
   right: 0;
-  background: linear-gradient(270deg, #FFFFFF 0%, transparent 100%);
+  background: linear-gradient(270deg, var(--aurora-surface) 0%, transparent 100%);
 }
 
 @keyframes aurora-marquee {
@@ -224,7 +244,7 @@
   left: 0;
   height: calc(100vh - 86px);
   width: 220px;
-  background: #F1F4F8;
+  background: var(--aurora-sidebar-bg);
   border-right: 1px solid var(--aurora-border);
   overflow: hidden;
   z-index: 850;

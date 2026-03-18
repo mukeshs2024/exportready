@@ -25,6 +25,7 @@ import ProductsMarketplace from "./pages/ProductsMarketplace";
 import Compliance from "./pages/Compliance";
 import Reports from "./pages/Reports";
 import DocumentGenerator from "./pages/DocumentGenerator";
+import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import AccountSettings from "./pages/AccountSettings";
 import ProductDetail from "./pages/ProductDetail";
@@ -111,6 +112,7 @@ function App() {
                       <Route path="/compliance" element={<Compliance />} />
                       <Route path="/reports" element={<Reports />} />
                       <Route path="/chatbot" element={<ExportAdvisor />} />
+                      <Route path="/notifications" element={<Notifications />} />
                       <Route path="/docs" element={<DocumentGenerator />} />
                       <Route path="/export-documents" element={<ExportDocuments />} />
                       <Route path="/readiness" element={<ExportReadiness />} />
