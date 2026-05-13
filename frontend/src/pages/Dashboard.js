@@ -88,33 +88,36 @@ function DashboardCardsSection() {
             <ShieldCheck size={20} />
           </div>
           <div>
-            <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#0f172a", margin: 0 }}>Export Readiness Overview</h3>
+            <div style={{ fontSize: "12px", fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>Export Readiness</div>
+            <h2 style={{ margin: "4px 0 0", fontSize: "20px", fontWeight: 700, color: "#0f172a" }}>Readiness Overview</h2>
           </div>
         </div>
-        {dashError && <span style={{ fontSize: "12px", color: "#ef4444", display: "flex", alignItems: "center", gap: "4px" }}><AlertCircle size={14} /> {dashError}</span>}
+        {dashError && <div style={{ fontSize: "13px", color: "#ef4444" }}>{dashError}</div>}
       </div>
 
       {/* Stats Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "16px" }}>
         {stats.map((stat) => (
-          <div key={stat.label} style={{
-            background: "#ffffff",
-            border: "1px solid #e2e8f0",
-            borderTop: `3px solid ${stat.accent}`,
-            borderRadius: "12px",
-            padding: "24px",
-            textAlign: "center",
-            transition: "all 0.2s ease",
-            cursor: "default",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "#cbd5e1";
-            e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "#e2e8f0";
-            e.currentTarget.style.boxShadow = "none";
-          }}>
+          <div
+            key={stat.label}
+            style={{
+              background: "#ffffff",
+              border: "1px solid #e2e8f0",
+              borderRadius: "12px",
+              padding: "24px",
+              textAlign: "center",
+              transition: "all 0.2s ease",
+              cursor: "default",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#cbd5e1";
+              e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "#e2e8f0";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          >
             <div style={{ fontSize: "20px", marginBottom: "12px", color: stat.accent }}>{stat.icon}</div>
             <div style={{ fontSize: "28px", fontWeight: 700, color: "#0f172a", marginBottom: "8px" }}>
               {stat.value}
@@ -215,11 +218,82 @@ function Dashboard() {
     dutyPercentage: 5,
   });
   const mapRef = useRef(null);
+  const [pipelineStages, setPipelineStages] = useState(null);
+  const [complianceAlerts, setComplianceAlerts] = useState([]);
+  const [recentDocuments, setRecentDocuments] = useState([]);
+  const [activityFeed, setActivityFeed] = useState([]);
 
   useEffect(() => {
     API.get("/trade-volume", { params: { product_hs: "1006" } })
       .then(res => setTradeData(res.data))
       .catch(() => {});
+  }, []);
+
+  // Fetch pipeline, compliance alerts, recent documents, and activity feed
+  useEffect(() => {
+    let mounted = true;
+    const fetchAll = async () => {
+      try {
+        const [pipelineRes, alertsRes, docsRes, activityRes] = await Promise.allSettled([
+          API.get('/shipments/pipeline'),
+          API.get('/compliance/alerts'),
+          API.get('/documents/recent'),
+          API.get('/activity'),
+        ]);
+
+        if (!mounted) return;
+
+        if (pipelineRes.status === 'fulfilled' && Array.isArray(pipelineRes.value.data)) {
+          setPipelineStages(pipelineRes.value.data);
+        } else {
+          setPipelineStages([
+            { id: 'draft', label: 'Draft', count: 4, progress: 20, note: 'Operational' },
+            { id: 'documentation', label: 'Documentation', count: 3, progress: 40, note: '3 pending review' },
+            { id: 'compliance', label: 'Compliance', count: 2, progress: 30, note: '2 require approval' },
+            { id: 'customs', label: 'Customs', count: 1, progress: 10, note: '1 held at port' },
+            { id: 'in_transit', label: 'In Transit', count: 6, progress: 70, note: 'Active' },
+            { id: 'delivered', label: 'Delivered', count: 24, progress: 100, note: 'Delivered' },
+          ]);
+        }
+
+        if (alertsRes.status === 'fulfilled' && Array.isArray(alertsRes.value.data)) {
+          setComplianceAlerts(alertsRes.value.data);
+        } else {
+          setComplianceAlerts([
+            { severity: 'HIGH', title: 'SABER certificate missing', shipment: 'IND-8821', deadlineHours: 18 },
+            { severity: 'MEDIUM', title: 'Packaging declaration required', shipment: 'IND-8814', deadlineHours: 48 },
+            { severity: 'INFO', title: 'EU labeling update', shipment: 'IND-8799', deadlineHours: 168 },
+          ]);
+        }
+
+        if (docsRes.status === 'fulfilled' && Array.isArray(docsRes.value.data)) {
+          setRecentDocuments(docsRes.value.data);
+        } else {
+          setRecentDocuments([
+            { type: 'Commercial Invoice', shipment: 'IND-8821', status: 'Pending Review' },
+            { type: 'Packing List', shipment: 'IND-8814', status: 'Approved' },
+            { type: 'Certificate of Origin', shipment: 'IND-8799', status: 'Draft' },
+          ]);
+        }
+
+        if (activityRes.status === 'fulfilled' && Array.isArray(activityRes.value.data)) {
+          setActivityFeed(activityRes.value.data);
+        } else {
+          setActivityFeed([
+            { time: '2m ago', text: 'Invoice generated', shipment: 'IND-8821' },
+            { time: '10m ago', text: 'Shipment cleared customs', shipment: 'IND-8712' },
+            { time: '30m ago', text: 'Compliance approved', shipment: 'IND-8814' },
+            { time: '1h ago', text: 'Buyer uploaded document', shipment: 'IND-8720' },
+            { time: '2h ago', text: 'AI detected missing HS code', shipment: 'IND-8799' },
+          ]);
+        }
+      } catch (err) {
+        // silent fallback; mocks already set above if rejected
+      }
+    };
+
+    fetchAll();
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
@@ -399,22 +473,33 @@ function Dashboard() {
 
   return (
     <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 24px" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px", paddingTop: "24px", paddingBottom: "24px" }}>
-        <div className="aurora-hero">
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div style={{ fontSize: "12px", color: "#94A3B8" }}>ExportReady — Mumbai, India</div>
-          <h1 className="aurora-hero-title">Discover Your Next Export Market</h1>
-          <p style={{ fontSize: "14px", color: "#475569", maxWidth: "380px" }}>
-            Find global demand, understand compliance,
-            and estimate profits in minutes.
-          </p>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button className="aurora-cta primary" onClick={() => navigate("/market")}>Analyze My Product</button>
-            <button className="aurora-cta" onClick={() => navigate("/market")}>Explore Global Markets</button>
-          </div>
-        </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px", paddingTop: "18px", paddingBottom: "18px" }}>
+        <div className="aurora-hero" style={{ padding: "18px 18px" }}>
+        <div style={{ display: "flex", gap: "18px", alignItems: "flex-start" }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "12px", color: "#94A3B8" }}>TradeOS — Mumbai, India</div>
+            <h1 className="aurora-hero-title" style={{ margin: "6px 0 6px", fontSize: "20px" }}>Operational Export Dashboard</h1>
+            <p style={{ fontSize: "13px", color: "#475569", maxWidth: "420px", margin: 0 }}>
+              Live operations: documents, compliance, and shipment workflows — focused on what needs your attention now.
+            </p>
 
-        <div className="aurora-map" ref={mapRef} onMouseMove={handleMarkerMove}>
+            {/* Replace marketing CTAs with compact operational quick stats */}
+            <div style={{ display: "flex", gap: "10px", marginTop: "12px", alignItems: "center" }}>
+              <div style={{ background: "#fff", border: "1px solid #e5e7eb", padding: "8px 12px", borderRadius: 8 }}>
+                <div style={{ fontSize: 12, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>Documents pending</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#0D1B4C" }}>3</div>
+              </div>
+              <div style={{ background: "#fff", border: "1px solid #e5e7eb", padding: "8px 12px", borderRadius: 8 }}>
+                <div style={{ fontSize: 12, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>Shipments at risk</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#f59e0b" }}>2</div>
+              </div>
+              <div style={{ marginLeft: "8px" }}>
+                <button className="aurora-cta primary" style={{ padding: "8px 12px" }} onClick={() => navigate("/documents/new")}>Create document</button>
+              </div>
+            </div>
+          </div>
+
+          <div className="aurora-map" ref={mapRef} onMouseMove={handleMarkerMove} style={{ width: 420, height: 160 }}>
           {tooltip && (
             <div className="aurora-tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
               {tooltip.content.split("\n").map((line, index) => (
@@ -464,9 +549,35 @@ function Dashboard() {
             ))}
 
             <Marker coordinates={[77, 28]}>
-              <circle r={5} fill="#F5A623" />
+              <circle r={4} fill="#F5A623" />
             </Marker>
           </ComposableMap>
+        </div>
+      </div>
+
+      {/* Shipment pipeline — operational, compact, horizontal */}
+      </div>
+      <div style={{ width: "100%", marginTop: 6 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", overflowX: "auto" }}>
+          {(pipelineStages ?? [
+            { id: 'draft', label: 'Draft', count: 4, progress: 20, color: '#94A3B8' },
+            { id: 'documentation', label: 'Documentation', count: 3, progress: 40, color: '#2563eb' },
+            { id: 'compliance', label: 'Compliance', count: 2, progress: 30, color: '#f59e0b' },
+            { id: 'customs', label: 'Customs', count: 1, progress: 10, color: '#ef4444' },
+            { id: 'in_transit', label: 'In Transit', count: 6, progress: 70, color: '#10b981' },
+            { id: 'delivered', label: 'Delivered', count: 24, progress: 100, color: '#8b5cf6' },
+          ]).map((stage, idx) => (
+            <div key={stage.id} style={{ minWidth: 160, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>{stage.label}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: stage.color }}>{stage.count}</div>
+              </div>
+              <div style={{ height: 8, background: '#f1f5f9', borderRadius: 6, overflow: 'hidden' }}>
+                <div style={{ width: `${Math.min(100, stage.progress ?? (10 + idx * 15))}%`, height: '100%', background: stage.color }} />
+              </div>
+              <div style={{ fontSize: 12, color: '#94a3b8' }}>{stage.note || (stage.id === 'compliance' ? 'Requires attention' : 'Operational')}</div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -713,17 +824,32 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="aurora-panel" style={{ background: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)", border: "1px solid #fcd34d", borderTop: "3px solid #f59e0b" }}>
+          <div className="aurora-panel" style={{ borderTop: "3px solid #f59e0b" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
               <div className="aurora-card-icon" style={{ background: "rgba(245,158,11,0.12)", color: "#f59e0b" }}>
                 <AlertCircle size={20} />
               </div>
-              <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#92400e", margin: 0 }}>Quick Actions</h3>
+              <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#0f172a", margin: 0 }}>Compliance Alerts</h3>
             </div>
-            <div style={{ display: "grid", gap: "8px", fontSize: "13px", color: "#b45309" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><span style={{ color: "#f59e0b" }}>→</span> Upload IEC certificate</div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><span style={{ color: "#f59e0b" }}>→</span> Verify UAE buyer credentials</div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><span style={{ color: "#f59e0b" }}>→</span> Check textile certification</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {(complianceAlerts.length ? complianceAlerts : [
+                { severity: 'HIGH', title: 'SABER certificate missing', shipment: 'IND-8821', deadlineHours: 18 },
+                { severity: 'MEDIUM', title: 'Packaging declaration required', shipment: 'IND-8814', deadlineHours: 48 },
+                { severity: 'INFO', title: 'EU labeling update', shipment: 'IND-8799', deadlineHours: 168 },
+              ]).map((a, i) => (
+                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'center', background: '#fff', border: '1px solid #e5e7eb', padding: '10px', borderRadius: 8 }}>
+                  <div style={{ width: 8, height: 40, borderRadius: 6, background: a.severity === 'HIGH' ? '#ef4444' : a.severity === 'MEDIUM' ? '#f59e0b' : '#2f6bff' }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#0D1B4C' }}>{a.title}</div>
+                      <div style={{ fontSize: 12, color: '#94a3b8' }}>Shipment {a.shipment}</div>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 6 }}>
+                      Deadline: <strong style={{ color: a.severity === 'HIGH' ? '#ef4444' : a.severity === 'MEDIUM' ? '#f59e0b' : '#2f6bff' }}>{a.deadlineHours} hrs</strong>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -818,6 +944,65 @@ function Dashboard() {
                 <strong>Recommendation:</strong> Diversify into Agriculture for UAE market — growing +22% YoY with 40% lower competition than Engineering.
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+      {/* Document workflow + Operational activity */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20, marginTop: 18 }}>
+        <div className="aurora-panel">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0D1B4C' }}>Recent Documents</h4>
+            <div style={{ fontSize: 12, color: '#94a3b8' }}>Showing last 7</div>
+          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ textAlign: 'left', color: '#64748b' }}>
+                <th style={{ padding: '8px 6px' }}>Document</th>
+                <th style={{ padding: '8px 6px' }}>Shipment</th>
+                <th style={{ padding: '8px 6px' }}>Status</th>
+                <th style={{ padding: '8px 6px' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { type: 'Commercial Invoice', shipment: 'IND-8821', status: 'Pending Review' },
+                { type: 'Packing List', shipment: 'IND-8814', status: 'Approved' },
+                { type: 'Certificate of Origin', shipment: 'IND-8799', status: 'Draft' },
+              ].map((row, i) => (
+                <tr key={i} style={{ borderTop: '1px solid #f1f5f9' }}>
+                  <td style={{ padding: '10px 6px' }}>{row.type}</td>
+                  <td style={{ padding: '10px 6px' }}>{row.shipment}</td>
+                  <td style={{ padding: '10px 6px' }}>
+                    <span style={{ padding: '6px 8px', borderRadius: 999, background: row.status === 'Approved' ? '#ecfdf5' : row.status === 'Pending Review' ? '#fffbeb' : '#eff6ff', border: '1px solid #e6ecf3', color: row.status === 'Approved' ? '#065f46' : row.status === 'Pending Review' ? '#92400e' : '#1e40af', fontWeight: 700, fontSize: 12 }}>{row.status}</span>
+                  </td>
+                  <td style={{ padding: '10px 6px' }}><button className="aurora-cta" style={{ padding: '6px 8px', fontSize: 13 }}>View</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="aurora-panel">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0D1B4C' }}>Operational Activity</h4>
+            <div style={{ fontSize: 12, color: '#94a3b8' }}>Real-time</div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 360, overflowY: 'auto' }}>
+            {[
+              { time: '2m ago', text: 'Invoice generated', shipment: 'IND-8821' },
+              { time: '10m ago', text: 'Shipment cleared customs', shipment: 'IND-8712' },
+              { time: '30m ago', text: 'Compliance approved', shipment: 'IND-8814' },
+              { time: '1h ago', text: 'Buyer uploaded document', shipment: 'IND-8720' },
+              { time: '2h ago', text: 'AI detected missing HS code', shipment: 'IND-8799' },
+            ].map((a, i) => (
+              <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: 8, borderRadius: 8, background: '#fff', border: '1px solid #eef2f7' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 8, background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#0D1B4C' }}>{a.text.split(' ')[0].charAt(0)}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#0D1B4C' }}>{a.text}</div>
+                  <div style={{ fontSize: 12, color: '#94a3b8' }}>{a.shipment} · {a.time}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

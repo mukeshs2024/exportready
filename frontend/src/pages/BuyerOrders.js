@@ -57,7 +57,6 @@ function BuyerOrders() {
       </div>
 
       {error && <Toast message={error} type="error" onClose={() => setError("")} />}
-                            <p style={{ margin: "0.3rem 0 0", color: "#64748b" }}>Offer Price: ${Number(lastOffer.price || 0).toFixed(2)} - Quantity: {order.quantity}</p>
       {loading && <div style={{ color: "#4a5568" }}>Loading orders...</div>}
 
       {!loading && orders.length === 0 && (
